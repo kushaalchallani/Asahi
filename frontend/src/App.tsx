@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { createCheckIn } from "./api"
 import "./App.css"
 
 const feelings = [
@@ -9,7 +10,20 @@ const feelings = [
 
 function App() {
   const [selectedFeeling, setSelectedFeeling ] = useState<string|null>(null)
+  const [saving, setSaving] = useState(false)
   
+  async function handleFeelingSelect(feeling:string) {
+    setSelectedFeeling(feeling)
+    setSaving(true)
+
+    try {
+      await createCheckIn(feeling)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setSaving(false)
+    }
+  }
   return (
     <main className="app">
       <section className="hero">
@@ -25,13 +39,19 @@ function App() {
 
         <div className="feelings">
           {feelings.map((feelings) => (
-            <button key={feelings} className = {selectedFeeling === feelings ? "feeling selected" : "feeling"} onClick={() => setSelectedFeeling(feelings)}>{feelings}</button>
+            <button key={feelings} className = {selectedFeeling === feelings ? "feeling selected" : "feeling"} onClick={() => handleFeelingSelect(feelings)} disabled={saving}>{feelings}</button>
           ))}
         </div>
 
-        {selectedFeeling && (
+        {selectedFeeling && !saving && (
           <p className="response">
-            You selected: {selectedFeeling}
+            Thanks for checking in.
+          </p>
+        )}
+
+        {saving && (
+          <p className="response">
+            Saving...
           </p>
         )}
       </section>
