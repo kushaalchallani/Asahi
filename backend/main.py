@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from database import Base, engine
+import models
 
 check_ins=[]
-
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.add_middleware(
