@@ -29,3 +29,13 @@ export async function getCheckIn() {
 
     return response.json()
 }
+
+export async function getCheckInInsights() {
+    const response = await fetch(`${API_URL}/check-ins/insights`)
+
+    if (!response.ok){
+        throw new Error("Failed to fetch check-ins")
+    }
+
+    return response.json()
+}

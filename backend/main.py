@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import Base, engine, SessionLocal
+from collections import Counter
+from datetime import datetime, timedelta
 import models
 
 Base.metadata.create_all(bind=engine)
@@ -38,6 +40,26 @@ def get_check_in(db: Session=Depends(get_db)):
     return db.query(models.CheckIn).order_by(
         models.CheckIn.created_at.desc()
     ).all()
+
+@app.get("/check-ins/insights")
+def get_checki_in(db:Session=Depends(get_db)):
+    week_ago=datetime.now() - timedelta(days=7)
+
+    recent_check_ins=(
+        db.query(models.CheckIn).filter(models.CheckIn.created_at>=week_ago).order_by(models.CheckIn.created_at.desc()).all()
+    )
+
+    feelings=[check_in.feeling for check_in in recent_check_ins]
+
+    most_common_feeling=None
+
+    if feelings:
+        most_common_feeling=Counter(feelings).most_common(1)[0][0]
+
+    return {
+        "check_in_count": len(recent_check_ins),
+        "most_common_feeling": most_common_feeling
+    }
 
 @app.get("/")
 def root():

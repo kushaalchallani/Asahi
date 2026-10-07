@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { createCheckIn, getCheckIn } from "./api"
+import { createCheckIn, getCheckIn, getCheckInInsights } from "./api"
 import "./App.css"
 
 const feelings = [
@@ -15,6 +15,10 @@ function App() {
   const [saving, setSaving] = useState(false)
   const [checkIns, setCheckIns] = useState<any[]>([])
   const [note, setNote] = useState("")
+  const [insights, setInsights] = useState<{
+    check_in_count: number
+    most_common_feeling: string|null
+  } | null>(null)
 
   useEffect(()=> {
     async function loadCheckIns() {
@@ -27,6 +31,19 @@ function App() {
     }
 
     loadCheckIns()
+  }, [])
+
+  useEffect(()=> {
+    async function loadInsights() {
+      try{
+        const data = await getCheckInInsights()
+        setInsights(data)
+      }  catch (error) {
+        console.log(error)
+      }
+    }
+
+    loadInsights()
   }, [])
 
   function handleFeelingSelect(feeling: string){
@@ -82,6 +99,18 @@ function App() {
               disabled={saving}
               />
             <button className="save-button" onClick={handleSaveCheckIn} disabled={saving}>{saving ? "Saving..." : "Save check-in"}</button>
+          </div>
+        )}
+
+        {insights && insights.check_in_count >0 && (
+          <div className="insights">
+            <h2>Your recent check-ins</h2>
+
+            <p>You've checked in {insights.check_in_count}{" "}{insights.check_in_count === 1 ? "time" : "times"}</p>
+
+            {insights.most_common_feeling && (
+              <p>You've mostly been feeling{""} <strong>{insights.most_common_feeling.toLowerCase()}</strong></p>
+            )}
           </div>
         )}
 
