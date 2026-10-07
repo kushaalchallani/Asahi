@@ -31,7 +31,12 @@ function App() {
     setSaving(true)
 
     try {
-      await createCheckIn(feeling)
+      const newCheckIn = await createCheckIn(feeling)
+      
+      setCheckIns((currentCheckIns)=> [
+        newCheckIn,
+        ...currentCheckIns
+      ])
     } catch (error) {
       console.log(error)
     } finally {
