@@ -1,11 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
-from database import Base, engine
+from sqlalchemy.orm import Session
+from database import Base, engine, SessionLocal
 import models
 
-check_ins=[]
 Base.metadata.create_all(bind=engine)
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close
+
 app = FastAPI()
 
 app.add_middleware(
@@ -17,12 +24,12 @@ app.add_middleware(
 )
 
 @app.post("/check-ins")
-def create_check_in(feeling: str):
-    check_in={
-        "feelings": feeling,
-        "created_at": datetime.now().isoformat()
-    }
-    check_ins.append(check_ins)
+def create_check_in(feeling: str, db: Session=Depends(get_db)):
+    check_in = models.CheckIn(feeling=feeling)
+
+    db.add(check_in)
+    db.commit()
+    db.refresh(check_in)
 
     return check_in
 
