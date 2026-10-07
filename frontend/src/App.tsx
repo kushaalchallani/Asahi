@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { createCheckIn } from "./api"
+import { useState, useEffect } from "react"
+import { createCheckIn, getCheckIn } from "./api"
 import "./App.css"
 
 const feelings = [
@@ -11,6 +11,20 @@ const feelings = [
 function App() {
   const [selectedFeeling, setSelectedFeeling ] = useState<string|null>(null)
   const [saving, setSaving] = useState(false)
+  const [checkIns, setCheckIns] = useState<any[]>([])
+
+  useEffect(()=> {
+    async function loadCheckIns() {
+      try{
+        const data = await getCheckIn()
+        setCheckIns(data)
+      }  catch (error) {
+        console.log(error)
+      }
+    }
+
+    loadCheckIns()
+  }, [])
   
   async function handleFeelingSelect(feeling:string) {
     setSelectedFeeling(feeling)
@@ -53,6 +67,19 @@ function App() {
           <p className="response">
             Saving...
           </p>
+        )}
+
+        {checkIns.length > 0 && (
+          <div className="history">
+            <h2>Recent check-ins</h2>
+
+            {checkIns.map((checkIn) => (
+              <div className="history-item" key={checkIn.id}>
+                <p>{checkIn.feeling}</p>
+                <small>{new Date(checkIn.created_at).toLocaleString()}</small>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </main>

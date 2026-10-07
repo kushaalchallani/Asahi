@@ -33,6 +33,12 @@ def create_check_in(feeling: str, db: Session=Depends(get_db)):
 
     return check_in
 
+@app.get("/check-ins")
+def get_check_in(db: Session=Depends(get_db)):
+    return db.query(models.CheckIn).order_by(
+        models.CheckIn.created_at.desc()
+    ).all()
+
 @app.get("/")
 def root():
     return {

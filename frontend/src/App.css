@@ -57,3 +57,25 @@ h1 {
   margin-top: 28px;
   font-size: 15px;
 }
+
+.history {
+  margin-top: 48px;
+}
+
+.history h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.history-item {
+  padding: 16px 0;
+  border-top: 1px solid #d8d2c8;
+}
+
+.history-item p {
+  margin: 0 0 6px;
+}
+
+.history-item small {
+  color: #777;
+}
