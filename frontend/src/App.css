@@ -119,3 +119,66 @@ h1 {
   color: #555;
   margin: 0 0 8px;
 }
+
+.mission-card {
+  margin-top: 32px;
+  padding: 24px;
+  border: 1px solid #e6e2da;
+  border-radius: 20px;
+  background: #f7f4ee;
+  text-align: left;
+}
+
+.mission-label {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b8175;
+}
+
+.mission-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #292722;
+}
+
+.mission-card > p:not(.mission-label) {
+  margin: 0;
+  line-height: 1.6;
+  color: #6f6a61;
+}
+
+.mission-card button {
+  margin-top: 20px;
+  margin-right: 10px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #292722;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mission-card button:hover {
+  opacity: 0.88;
+}
+
+.mission-card button:active {
+  transform: translateY(1px);
+}
+
+.mission-card button:last-child {
+  background: transparent;
+  color: #6f6a61;
+  border: 1px solid #d8d2c8;
+}
+
+.mission-card button:last-child:hover {
+  background: #eeeae2;
+  opacity: 1;
+}

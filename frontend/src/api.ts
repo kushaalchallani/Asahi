@@ -3,7 +3,7 @@ const API_URL = "http://localhost:8000"
 export async function createCheckIn(feeling: string, note?: string) {
     const params = new URLSearchParams({
         feeling,
-    })
+    });
 
     if (note) {
         params.append("note", note)
@@ -11,31 +11,77 @@ export async function createCheckIn(feeling: string, note?: string) {
 
     const response = await fetch(`${API_URL}/check-ins?${params.toString()}`, {
         method: "POST"
-    })
+    });
 
     if (!response.ok) {
-        throw new Error("Failed to create check-in")
+        throw new Error("Failed to create check-in");
     } 
 
-    return response.json()
+    return response.json();
 }
 
 export async function getCheckIn() {
-    const response = await fetch(`${API_URL}/check-ins`)
+    const response = await fetch(`${API_URL}/check-ins`);
 
     if (!response.ok){
-        throw new Error("Failed to fetch check-ins")
+        throw new Error("Failed to fetch check-ins");
     }
 
-    return response.json()
+    return response.json();
 }
 
 export async function getCheckInInsights() {
-    const response = await fetch(`${API_URL}/check-ins/insights`)
+    const response = await fetch(`${API_URL}/check-ins/insights`);
 
     if (!response.ok){
-        throw new Error("Failed to fetch check-ins")
+        throw new Error("Failed to fetch check-ins");
     }
 
-    return response.json()
+    return response.json();
+}
+
+export async function getTodayMission() {
+    const reponse = await fetch(`${API_URL}/missions/today`);
+    
+    if (!reponse.ok) {
+        throw new Error("Failed to get today's mission");
+    }
+
+    return reponse.json();
+}
+
+export async function startMission(missionId:Number) {
+    const response = await fetch(`${API_URL}/missions/${missionId}/start`, {
+        method: "POST",
+    });
+
+    if (!response.ok)  {
+        throw new Error("Failed to start mission");
+    }
+
+    return response.json();
+}
+
+export async function completeMission(missionId:Number) {
+    const response = await fetch(`${API_URL}/missions/${missionId}/complete`, {
+        method: "POST",
+    });
+
+    if (!response.ok)  {
+        throw new Error("Failed to complete mission");
+    }
+
+    return response.json();
+}
+
+export async function skipMission(missionId:Number) {
+    const response = await fetch(`${API_URL}/missions/${missionId}/skip`, {
+        method: "POST",
+    });
+
+    if (!response.ok)  {
+        throw new Error("Failed to skip mission");
+    }
+
+    return response.json();
 }

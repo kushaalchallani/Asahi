@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { createCheckIn, getCheckIn, getCheckInInsights } from "./api"
+import { createCheckIn, getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./api"
 import "./App.css"
 
 const feelings = [
@@ -19,6 +19,9 @@ function App() {
     check_in_count: number
     most_common_feeling: string|null
   } | null>(null)
+  const [mission, setMission] = useState<any>(null)
+  const [missionStatus, setMissionStatus] =  useState("assigned")
+  const [missionLoading, setMissionLoading] = useState(true)
 
   useEffect(()=> {
     async function loadCheckIns() {
@@ -46,6 +49,25 @@ function App() {
     loadInsights()
   }, [])
 
+  useEffect(()=> {
+    async function loadMission() {
+      try{
+        const data = await getTodayMission()
+        setMission(data.mission)
+
+        if (data.status) {
+          setMissionStatus(data.status)
+        }
+      }  catch (error) {
+        console.log(error)
+      } finally {
+        setMissionLoading(false)
+      }
+    }
+
+    loadMission()
+  }, [])
+
   function handleFeelingSelect(feeling: string){
     setSelectedFeeling(feeling)
   }
@@ -68,6 +90,40 @@ function App() {
       console.log(error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleStartMission(){
+    if (!mission) return
+
+    try {
+      await startMission(mission.id)
+      setMissionStatus("started")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async function handleCompleteMission() {
+    if (!mission) return
+
+    try{
+      await completeMission(mission.id)
+      setMissionStatus("completed")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async function handleSkipMission() {
+    if (!mission) return
+
+    try{
+      await skipMission(mission.id)
+      setMission(null)
+      setMissionStatus("skipped")
+    } catch (error) {
+      console.log(error)
     }
   }
   return (
@@ -99,6 +155,33 @@ function App() {
               disabled={saving}
               />
             <button className="save-button" onClick={handleSaveCheckIn} disabled={saving}>{saving ? "Saving..." : "Save check-in"}</button>
+          </div>
+        )}
+
+        {!missionLoading && mission && (
+          <div className="mission-card">
+            <p className="mission-label">Today's Mission</p>
+            <h2>{mission.title}</h2>
+            <p>{mission.description}</p>
+
+            {missionStatus === 'assigned' && (
+              <button onClick={handleStartMission}>Start</button>
+            )}
+
+            {missionStatus === 'started' && (
+              <>
+              <button onClick={handleCompleteMission}>Complete</button>
+              <button onClick={handleSkipMission}>Not today</button>
+              </>
+            )}
+
+            {missionStatus === 'completed' && (
+              <p>Completed. Nice work!</p>
+            )}
+
+            {missionStatus === 'skipped' && (
+              <p>No pressure. You can leave it for today.</p>
+            )}
           </div>
         )}
 
