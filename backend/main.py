@@ -24,8 +24,8 @@ app.add_middleware(
 )
 
 @app.post("/check-ins")
-def create_check_in(feeling: str, db: Session=Depends(get_db)):
-    check_in = models.CheckIn(feeling=feeling)
+def create_check_in(feeling: str, note: str | None=None, db: Session=Depends(get_db)):
+    check_in = models.CheckIn(feeling=feeling, note=note)
 
     db.add(check_in)
     db.commit()

@@ -79,3 +79,43 @@ h1 {
 .history-item small {
   color: #777;
 }
+
+.note-section {
+  margin-top: 24px;
+}
+
+.note-section textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #d8d2c8;
+  border-radius: 12px;
+  resize: vertical;
+  font: inherit;
+  background: #fff;
+}
+
+.note-section textarea:focus {
+  outline: none;
+  border-color: #aaa;
+}
+
+.save-button {
+  margin-top: 12px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #222;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+}
+
+.save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history-note {
+  color: #555;
+  margin: 0 0 8px;
+}

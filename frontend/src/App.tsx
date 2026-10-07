@@ -4,14 +4,17 @@ import "./App.css"
 
 const feelings = [
   "I'm doing okay",
-  "Not really",
-  "I'm not sure"
+  "A little low",
+  "Stressed",
+  "Lonely",
+  "Not sure",
 ]
 
 function App() {
   const [selectedFeeling, setSelectedFeeling ] = useState<string|null>(null)
   const [saving, setSaving] = useState(false)
   const [checkIns, setCheckIns] = useState<any[]>([])
+  const [note, setNote] = useState("")
 
   useEffect(()=> {
     async function loadCheckIns() {
@@ -25,18 +28,25 @@ function App() {
 
     loadCheckIns()
   }, [])
-  
-  async function handleFeelingSelect(feeling:string) {
+
+  function handleFeelingSelect(feeling: string){
     setSelectedFeeling(feeling)
+  }
+  
+  async function handleSaveCheckIn() {
+    if (!selectedFeeling) return
+
     setSaving(true)
 
     try {
-      const newCheckIn = await createCheckIn(feeling)
+      const newCheckIn = await createCheckIn(selectedFeeling, note)
       
       setCheckIns((currentCheckIns)=> [
         newCheckIn,
         ...currentCheckIns
       ])
+
+      setNote("")
     } catch (error) {
       console.log(error)
     } finally {
@@ -62,16 +72,17 @@ function App() {
           ))}
         </div>
 
-        {selectedFeeling && !saving && (
-          <p className="response">
-            Thanks for checking in.
-          </p>
-        )}
-
-        {saving && (
-          <p className="response">
-            Saving...
-          </p>
+        {selectedFeeling && (
+          <div className="note-section">
+            <textarea 
+              value={note}
+              onChange={(event)=> setNote(event.target.value)}
+              placeholder="Want to say a little more? (optional)"
+              rows={4}
+              disabled={saving}
+              />
+            <button className="save-button" onClick={handleSaveCheckIn} disabled={saving}>{saving ? "Saving..." : "Save check-in"}</button>
+          </div>
         )}
 
         {checkIns.length > 0 && (
@@ -81,6 +92,10 @@ function App() {
             {checkIns.map((checkIn) => (
               <div className="history-item" key={checkIn.id}>
                 <p>{checkIn.feeling}</p>
+
+                {checkIn.note && (
+                  <p className="history-note">{checkIn.note}</p>
+                )}
                 <small>{new Date(checkIn.created_at).toLocaleString()}</small>
               </div>
             ))}

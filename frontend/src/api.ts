@@ -1,7 +1,15 @@
 const API_URL = "http://localhost:8000"
 
-export async function createCheckIn(feeling: string) {
-    const response = await fetch(`${API_URL}/check-ins?feeling=${encodeURIComponent(feeling)}`, {
+export async function createCheckIn(feeling: string, note?: string) {
+    const params = new URLSearchParams({
+        feeling,
+    })
+
+    if (note) {
+        params.append("note", note)
+    }
+
+    const response = await fetch(`${API_URL}/check-ins?${params.toString()}`, {
         method: "POST"
     })
 
