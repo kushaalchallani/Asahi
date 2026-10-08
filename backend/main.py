@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import Base, engine
+from core.database import Base, engine
 from routes.check_ins import router as check_in_router
 from routes.mission import router as mission_router
 import models

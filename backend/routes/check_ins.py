@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
+from schemas.check_ins import CheckInCreate
 import models
 
 router = APIRouter(prefix='/check-ins', tags=["Check-ins"])
@@ -34,8 +35,8 @@ def get_check_in(db:Session=Depends(get_db)):
     }
 
 @router.post("")
-def create_check_in(feeling: str, note: str | None=None, db: Session=Depends(get_db)):
-    check_in = models.CheckIn(feeling=feeling, note=note)
+def create_check_in(check_in: CheckInCreate, db: Session=Depends(get_db)):
+    check_in = models.CheckIn(feeling=CheckInCreate.feeling, note=CheckInCreate.note)
 
     db.add(check_in)
     db.commit()
