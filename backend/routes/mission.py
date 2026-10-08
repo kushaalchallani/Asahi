@@ -99,7 +99,7 @@ def get_today_mission(db: Session=Depends(get_db)):
         "mission": mission
     }
 
-@router.post('/missions/{mission_id}/start')
+@router.post('/{mission_id}/start')
 def start_mission(mission_id: int, db: Session=Depends(get_db)):
     user_mission = (
         db.query(models.UserMission).filter(models.UserMission.mission_id == mission_id).order_by(models.UserMission.assigned_at.desc()).first()
@@ -112,6 +112,25 @@ def start_mission(mission_id: int, db: Session=Depends(get_db)):
 
     user_mission.status = 'started'
     user_mission.started_at = datetime.now()
+
+    db.commit()
+    db.refresh(user_mission)
+
+    return user_mission
+
+@router.post("/{mission_id}/complete")
+def complete_mission(mission_id: int, db: Session=Depends(get_db)):
+    user_mission= (
+        db.query(models.UserMission).filter(models.UserMission.mission_id == mission_id, models.UserMission.status == 'started').order_by(models.UserMission.assigned_at.desc()).first()
+    )
+
+    if not user_mission:
+        return {
+            "message": "Started mission not found."
+        }
+
+    user_mission.status = "completed"
+    user_mission.completed_at = datetime.now()
 
     db.commit()
     db.refresh(user_mission)
