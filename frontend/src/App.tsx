@@ -1,20 +1,13 @@
 import { useState, useEffect } from "react"
-import { createCheckIn, getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./api"
+import CheckIn from "./components/CheckIn/CheckIn"
+import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./api"
 import "./App.css"
 
-const feelings = [
-  "I'm doing okay",
-  "A little low",
-  "Stressed",
-  "Lonely",
-  "Not sure",
-]
+
 
 function App() {
-  const [selectedFeeling, setSelectedFeeling ] = useState<string|null>(null)
-  const [saving, setSaving] = useState(false)
+
   const [checkIns, setCheckIns] = useState<any[]>([])
-  const [note, setNote] = useState("")
   const [insights, setInsights] = useState<{
     check_in_count: number
     most_common_feeling: string|null
@@ -68,30 +61,6 @@ function App() {
     loadMission()
   }, [])
 
-  function handleFeelingSelect(feeling: string){
-    setSelectedFeeling(feeling)
-  }
-  
-  async function handleSaveCheckIn() {
-    if (!selectedFeeling) return
-
-    setSaving(true)
-
-    try {
-      const newCheckIn = await createCheckIn(selectedFeeling, note)
-      
-      setCheckIns((currentCheckIns)=> [
-        newCheckIn,
-        ...currentCheckIns
-      ])
-
-      setNote("")
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   async function handleStartMission(){
     if (!mission) return
@@ -139,24 +108,7 @@ function App() {
           How are you feeling today?
         </p>
 
-        <div className="feelings">
-          {feelings.map((feelings) => (
-            <button key={feelings} className = {selectedFeeling === feelings ? "feeling selected" : "feeling"} onClick={() => handleFeelingSelect(feelings)} disabled={saving}>{feelings}</button>
-          ))}
-        </div>
-
-        {selectedFeeling && (
-          <div className="note-section">
-            <textarea 
-              value={note}
-              onChange={(event)=> setNote(event.target.value)}
-              placeholder="Want to say a little more? (optional)"
-              rows={4}
-              disabled={saving}
-              />
-            <button className="save-button" onClick={handleSaveCheckIn} disabled={saving}>{saving ? "Saving..." : "Save check-in"}</button>
-          </div>
-        )}
+        <CheckIn/>
 
         {!missionLoading && mission && (
           <div className="mission-card">
