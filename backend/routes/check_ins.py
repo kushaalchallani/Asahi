@@ -36,7 +36,7 @@ def get_check_in(db:Session=Depends(get_db)):
 
 @router.post("")
 def create_check_in(check_in: CheckInCreate, db: Session=Depends(get_db)):
-    check_in = models.CheckIn(feeling=CheckInCreate.feeling, note=CheckInCreate.note)
+    check_in = models.CheckIn(feeling=check_in.feeling, note=check_in.note)
 
     db.add(check_in)
     db.commit()
