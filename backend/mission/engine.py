@@ -1,5 +1,3 @@
-from models import Mission
-
 def choose_mission(current_check_in, recent_missions, missions):
     if not missions:
         return None

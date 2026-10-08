@@ -1,4 +1,4 @@
-from database import SessionLocal
+from core.database import SessionLocal
 from models import Mission
 
 missions = [

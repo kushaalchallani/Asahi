@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from sqlalchemy import desc
-from mission_engine import choose_mission
+from mission.engine import choose_mission
 import models
 
 router = APIRouter(prefix='/missions', tags=['Missions'])
