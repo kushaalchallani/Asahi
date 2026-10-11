@@ -1,8 +1,10 @@
+import type { CheckIn } from "./types/checkIn"
+
 const API_URL = "http://localhost:8000"
 
-export async function createCheckIn(feeling: string, note?: string) {
+export async function createCheckIn(feeling: string, note?: string): Promise<CheckIn> {
 
-    const response = await fetch(`${API_URL}/check-ins?`, {
+    const response = await fetch(`${API_URL}/check-ins`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -20,7 +22,7 @@ export async function createCheckIn(feeling: string, note?: string) {
     return response.json();
 }
 
-export async function getCheckIn() {
+export async function getCheckIn(): Promise<CheckIn[]> {
     const response = await fetch(`${API_URL}/check-ins`);
 
     if (!response.ok){

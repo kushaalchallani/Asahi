@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react"
 import CheckIn from "./components/CheckIn/CheckIn"
+import type { CheckIn as CheckInData } from "./types/checkIn"
 import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./api"
 import "./App.css"
 
-
+interface InsightsData {
+  check_in_count: number
+  most_common_feeling: string | null
+}
 
 function App() {
-
-  const [checkIns, setCheckIns] = useState<any[]>([])
-  const [insights, setInsights] = useState<{
-    check_in_count: number
-    most_common_feeling: string|null
-  } | null>(null)
+  const [checkIns, setCheckIns] = useState<CheckInData[]>([])
+  const [insights, setInsights] = useState<InsightsData | null>(null)
   const [mission, setMission] = useState<any>(null)
   const [missionStatus, setMissionStatus] =  useState("assigned")
   const [missionLoading, setMissionLoading] = useState(true)
@@ -61,6 +61,30 @@ function App() {
     loadMission()
   }, [])
 
+  async function handleCheckInCreated(newCheckIn: CheckInData) {
+    setCheckIns((currentCheckIns) => {
+      const alreadyExists = currentCheckIns.some(
+        (checkIn) => checkIn.id === newCheckIn.id
+      )
+
+      if (alreadyExists) {
+        return currentCheckIns
+      }
+
+      return [newCheckIn, ...currentCheckIns].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      )
+    })
+
+    try {
+      const data = await getCheckInInsights()
+      setInsights(data)
+    } catch (error) {
+      console.error("Failed to refresh insights:", error)
+    }
+  }
 
   async function handleStartMission(){
     if (!mission) return
@@ -107,8 +131,7 @@ function App() {
         <p className="subtitle">
           How are you feeling today?
         </p>
-
-        <CheckIn/>
+        <CheckIn onCheckInCreated={handleCheckInCreated} />
 
         {!missionLoading && mission && (
           <div className="mission-card">
