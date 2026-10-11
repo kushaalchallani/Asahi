@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import CheckIn from "./components/CheckIn/CheckIn"
 import History from "./components/History/History"
+import Insights from "./components/Insights/Insights"
 import type { CheckIn as CheckInData } from "./types/checkIn"
 import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./services/api"
 import type { CheckInInsights } from "./services/api"
@@ -158,17 +159,7 @@ function App() {
           </div>
         )}
 
-        {insights && insights.check_in_count >0 && (
-          <div className="insights">
-            <h2>Your recent check-ins</h2>
-
-            <p>You've checked in {insights.check_in_count}{" "}{insights.check_in_count === 1 ? "time" : "times"}</p>
-
-            {insights.most_common_feeling && (
-              <p>You've mostly been feeling{""} <strong>{insights.most_common_feeling.toLowerCase()}</strong></p>
-            )}
-          </div>
-        )}
+        <Insights insights={insights}/>
         <History checkIns={checkIns}/>
       </section>
     </main>
