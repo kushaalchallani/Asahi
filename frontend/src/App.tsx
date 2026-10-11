@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import CheckIn from "./components/CheckIn/CheckIn"
+import History from "./components/History/History"
 import type { CheckIn as CheckInData } from "./types/checkIn"
 import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./services/api"
 import type { CheckInInsights } from "./services/api"
@@ -168,23 +169,7 @@ function App() {
             )}
           </div>
         )}
-
-        {checkIns.length > 0 && (
-          <div className="history">
-            <h2>Recent check-ins</h2>
-
-            {checkIns.map((checkIn) => (
-              <div className="history-item" key={checkIn.id}>
-                <p>{checkIn.feeling}</p>
-
-                {checkIn.note && (
-                  <p className="history-note">{checkIn.note}</p>
-                )}
-                <small>{new Date(checkIn.created_at).toLocaleString()}</small>
-              </div>
-            ))}
-          </div>
-        )}
+        <History checkIns={checkIns}/>
       </section>
     </main>
   )
