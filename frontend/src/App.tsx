@@ -2,7 +2,9 @@ import { useState, useEffect } from "react"
 import CheckIn from "./components/CheckIn/CheckIn"
 import History from "./components/History/History"
 import Insights from "./components/Insights/Insights"
+import Missions from "./components/Missions/Missions"
 import type { CheckIn as CheckInData } from "./types/checkIn"
+import type { Mission as MissionData } from "./services/api"
 import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./services/api"
 import type { CheckInInsights } from "./services/api"
 
@@ -11,7 +13,7 @@ import "./App.css"
 function App() {
   const [checkIns, setCheckIns] = useState<CheckInData[]>([])
   const [insights, setInsights] = useState<CheckInInsights | null>(null)
-  const [mission, setMission] = useState<any>(null)
+  const [mission, setMission] = useState<MissionData | null>(null)
   const [missionStatus, setMissionStatus] =  useState("assigned")
   const [missionLoading, setMissionLoading] = useState(true)
 
@@ -45,6 +47,7 @@ function App() {
     async function loadMission() {
       try{
         const data = await getTodayMission()
+        console.log(data)
         setMission(data.mission)
 
         if (data.status) {
@@ -112,7 +115,6 @@ function App() {
 
     try{
       await skipMission(mission.id)
-      setMission(null)
       setMissionStatus("skipped")
     } catch (error) {
       console.log(error)
@@ -131,34 +133,14 @@ function App() {
           How are you feeling today?
         </p>
         <CheckIn onCheckInCreated={handleCheckInCreated} />
-
-        {!missionLoading && mission && (
-          <div className="mission-card">
-            <p className="mission-label">Today's Mission</p>
-            <h2>{mission.title}</h2>
-            <p>{mission.description}</p>
-
-            {missionStatus === 'assigned' && (
-              <button onClick={handleStartMission}>Start</button>
-            )}
-
-            {missionStatus === 'started' && (
-              <>
-              <button onClick={handleCompleteMission}>Complete</button>
-              <button onClick={handleSkipMission}>Not today</button>
-              </>
-            )}
-
-            {missionStatus === 'completed' && (
-              <p>Completed. Nice work!</p>
-            )}
-
-            {missionStatus === 'skipped' && (
-              <p>No pressure. You can leave it for today.</p>
-            )}
-          </div>
-        )}
-
+        <Missions 
+          mission={mission}
+          status={missionStatus}
+          loading={missionLoading}
+          onStart={handleStartMission}
+          onComplete={handleCompleteMission}
+          onSkip={handleSkipMission}
+        />
         <Insights insights={insights}/>
         <History checkIns={checkIns}/>
       </section>
