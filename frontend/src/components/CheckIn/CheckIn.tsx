@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createCheckIn } from "../../api"
+import { createCheckIn } from "../../services/api"
 import type { CheckIn as CheckInData } from "../../types/checkIn"
 
 interface CheckInProps {

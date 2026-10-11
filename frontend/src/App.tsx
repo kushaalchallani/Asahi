@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react"
 import CheckIn from "./components/CheckIn/CheckIn"
 import type { CheckIn as CheckInData } from "./types/checkIn"
-import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./api"
-import "./App.css"
+import { getCheckIn, getCheckInInsights, getTodayMission, startMission, completeMission, skipMission } from "./services/api"
+import type { CheckInInsights } from "./services/api"
 
-interface InsightsData {
-  check_in_count: number
-  most_common_feeling: string | null
-}
+import "./App.css"
 
 function App() {
   const [checkIns, setCheckIns] = useState<CheckInData[]>([])
-  const [insights, setInsights] = useState<InsightsData | null>(null)
+  const [insights, setInsights] = useState<CheckInInsights | null>(null)
   const [mission, setMission] = useState<any>(null)
   const [missionStatus, setMissionStatus] =  useState("assigned")
   const [missionLoading, setMissionLoading] = useState(true)
@@ -21,7 +18,7 @@ function App() {
       try{
         const data = await getCheckIn()
         setCheckIns(data)
-      }  catch (error) {
+      }  catch (error) {  
         console.log(error)
       }
     }
