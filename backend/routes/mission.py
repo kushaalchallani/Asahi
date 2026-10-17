@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from sqlalchemy import desc
-from mission.engine import choose_mission
+from mission.engine import choose_mission, build_feedback_history
 from schemas.mission_feedback import MissionFeedbackRequest
 import models
 
@@ -66,11 +66,18 @@ def get_today_mission(db: Session = Depends(get_db)):
         .all()
     )
 
-    recent_feedback = {
-        user_mission.mission_id: user_mission.feedback
-        for user_mission in recent_user_missions
-        if user_mission.feedback is not None
-    }
+    feedback_rows = (
+    db.query(models.UserMission)
+    .filter(models.UserMission.feedback.isnot(None))
+    .order_by(desc(models.UserMission.id))
+    .all()
+    )
+
+    recent_feedback = build_feedback_history(feedback_rows)
+
+    for user_mission in feedback_rows:
+        if user_mission.mission_id not in recent_feedback:
+            recent_feedback[user_mission.mission_id] = user_mission.feedback
 
     recent_mission_ids = [
         user_mission.mission_id

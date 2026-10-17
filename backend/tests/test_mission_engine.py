@@ -194,3 +194,20 @@ def test_repeated_low_mood_in_notes_prefers_low_energy_mission():
     )
 
     assert result.id == 1
+
+def test_feedback_history_keeps_latest_feedback_for_each_mission():
+    from types import SimpleNamespace
+    from mission.engine import build_feedback_history
+
+    feedback_rows = [
+        SimpleNamespace(mission_id=1, feedback="not_for_me"),
+        SimpleNamespace(mission_id=2, feedback="helpful"),
+        SimpleNamespace(mission_id=1, feedback="helpful"),
+    ]
+
+    result = build_feedback_history(feedback_rows)
+
+    assert result == {
+        1: "not_for_me",
+        2: "helpful",
+    }

@@ -1,3 +1,14 @@
+def build_feedback_history(feedback_rows):
+    feedback_by_mission = {}
+
+    for user_mission in feedback_rows:
+        if user_mission.mission_id not in feedback_by_mission:
+            feedback_by_mission[user_mission.mission_id] = (
+                user_mission.feedback
+            )
+
+    return feedback_by_mission
+
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
         return None
