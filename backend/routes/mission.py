@@ -66,6 +66,12 @@ def get_today_mission(db: Session = Depends(get_db)):
         .all()
     )
 
+    recent_feedback = {
+        user_mission.mission_id: user_mission.feedback
+        for user_mission in recent_user_missions
+        if user_mission.feedback is not None
+    }
+
     recent_mission_ids = [
         user_mission.mission_id
         for user_mission in recent_user_missions
@@ -85,6 +91,7 @@ def get_today_mission(db: Session = Depends(get_db)):
         current_check_in,
         recent_missions,
         missions,
+        recent_feedback=recent_feedback
     )
 
     if not mission:

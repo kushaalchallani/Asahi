@@ -1,4 +1,4 @@
-def choose_mission(current_check_in, recent_missions, missions):
+def choose_mission(current_check_in, recent_missions, missions, recent_feedback = None):
     if not missions:
         return None
 
@@ -42,7 +42,6 @@ def choose_mission(current_check_in, recent_missions, missions):
             mission
             for mission in candidates
             if mission.energy_required == "low"
-            or mission.category == "connection"
         ]
 
     #if none then all missions access
@@ -66,6 +65,7 @@ def choose_mission(current_check_in, recent_missions, missions):
 
     def score(mission):
         score = 0
+        feedback_by_mission = recent_feedback or {}
 
         if mission.energy_required == 'low':
             score += 2
@@ -94,6 +94,9 @@ def choose_mission(current_check_in, recent_missions, missions):
         ]):
             if mission.energy_required == 'low':
                 score +=3
+        
+        if feedback_by_mission.get(mission.id) == "not_for_me":
+            score -= 3
 
         return score
 
