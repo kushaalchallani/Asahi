@@ -91,7 +91,8 @@ def get_today_mission(db: Session = Depends(get_db)):
         current_check_in,
         recent_missions,
         missions,
-        recent_feedback=recent_feedback
+        recent_feedback=recent_feedback,
+        recent_check_ins=recent_check_ins
     )
 
     if not mission:

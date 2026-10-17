@@ -112,3 +112,40 @@ def test_not_for_me_feedback_penalizes_mission():
     )
 
     assert result.id == 2
+
+def test_repeated_low_mood_prefers_low_energy_mission():
+    from types import SimpleNamespace
+
+    current_check_in = SimpleNamespace(
+        feeling="I'm doing okay",
+        note="",
+    )
+
+    recent_check_ins = [
+        SimpleNamespace(feeling="A little low"),
+        SimpleNamespace(feeling="Tired"),
+        SimpleNamespace(feeling="Sad"),
+    ]
+
+    low_energy_mission = SimpleNamespace(
+        id=1,
+        energy_required="low",
+        social_required=False,
+        category="regulation",
+    )
+
+    high_energy_mission = SimpleNamespace(
+        id=2,
+        energy_required="high",
+        social_required=True,
+        category="connection",
+    )
+
+    result = choose_mission(
+        current_check_in=current_check_in,
+        recent_missions=[],
+        missions=[high_energy_mission, low_energy_mission],
+        recent_check_ins=recent_check_ins,
+    )
+
+    assert result.id == 1

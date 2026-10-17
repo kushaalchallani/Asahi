@@ -1,4 +1,4 @@
-def choose_mission(current_check_in, recent_missions, missions, recent_feedback = None):
+def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
         return None
 
@@ -7,51 +7,62 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback 
 
     candidates = missions.copy()
 
-
-    #difficult/heavily emotional check-ins
-    if any(word in feeling or word in note for word in [
+    low_mood_words = [
         "low",
         "tired",
         "broken",
         "sad",
         "overwhelmed",
         "heartbroken",
-    ]):
+    ]
+
+    stress_words = ["stress", "stressed", "anxious"]
+
+    is_low_mood = any(
+        word in feeling or word in note
+        for word in low_mood_words
+    )
+
+    is_stressed = any(
+        word in feeling or word in note
+        for word in stress_words
+    )
+
+    is_lonely = "lonely" in feeling or "lonely" in note
+
+    # Filter missions according to the latest check-in.
+    if is_low_mood:
         candidates = [
             mission
             for mission in candidates
-            if mission.energy_required == 'low'
+            if mission.energy_required == "low"
             and not mission.social_required
         ]
 
-    # Stress-related check-ins
-    elif any(word in feeling or word in note for word in [
-        "stress",
-        "stressed",
-        "anxious",
-    ]):
+    elif is_stressed:
         candidates = [
             mission
             for mission in candidates
-            if mission.category in ["regulation", "environment", "reflection"]
+            if mission.category in [
+                "regulation",
+                "environment",
+                "reflection",
+            ]
         ]
 
-    # loneliness != go socialize
-    elif "lonely" in feeling or "lonely" in note:
+    elif is_lonely:
         candidates = [
             mission
             for mission in candidates
             if mission.energy_required == "low"
         ]
 
-    #if none then all missions access
     if not candidates:
         return None
 
-    #avoid giving same mission back to back
-    recent_mission_ids= {
-        mission.id
-        for mission in recent_missions
+    # Avoid repeating recently assigned missions when alternatives exist.
+    recent_mission_ids = {
+        mission.id for mission in recent_missions
     }
 
     fresh_candidates = [
@@ -63,42 +74,53 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback 
     if fresh_candidates:
         candidates = fresh_candidates
 
-    def score(mission):
-        score = 0
-        feedback_by_mission = recent_feedback or {}
+    # Detect a repeated low-mood pattern in recent check-ins.
+    recent_check_ins = recent_check_ins or []
 
-        if mission.energy_required == 'low':
-            score += 2
+    recent_feelings = [
+        (check_in.feeling or "").lower()
+        for check_in in recent_check_ins[:3]
+    ]
+
+    repeated_low_mood = (
+        len(recent_feelings) >= 2
+        and all(
+            any(
+                word in recent_feeling
+                for word in ["low", "tired", "sad"]
+            )
+            for recent_feeling in recent_feelings
+        )
+    )
+
+    feedback_by_mission = recent_feedback or {}
+
+    def score(mission):
+        mission_score = 0
+
+        if mission.energy_required == "low":
+            mission_score += 2
 
         if not mission.social_required:
-            score += 1
+            mission_score += 1
 
-        if "lonely" in feeling or "lonely" in note:
-            if mission.category == "connection":
-                score += 3
+        if is_lonely and mission.category == "connection":
+            mission_score += 3
 
-        if any(word in feeling or word in note for word in [
-            "stress",
-            "stressed",
-            "anxious",
-        ]):
-            if mission.category == 'regulation':
-                score += 1
+        if is_stressed and mission.category == "regulation":
+            mission_score += 1
 
-        if any(word in feeling or word in note for word in [
-            "low",
-            "tired",
-            "sad",
-            "broken",
-            "heartbroken",
-        ]):
-            if mission.energy_required == 'low':
-                score +=3
-        
+        if is_low_mood and mission.energy_required == "low":
+            mission_score += 3
+
+        if repeated_low_mood and mission.energy_required == "low":
+            mission_score += 2
+
         if feedback_by_mission.get(mission.id) == "not_for_me":
-            score -= 3
+            mission_score -= 3
 
-        return score
+        return mission_score
 
     candidates.sort(key=score, reverse=True)
+
     return candidates[0]
