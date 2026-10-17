@@ -38,6 +38,21 @@ def test_model_trains_and_predicts():
     assert predictions[0] in (0,1)
     assert 0 <= metrics["accuracy"] <= 1
     assert 0 <= metrics["balanced_accuracy"] <= 1
+    assert 0 <= metrics["baseline_accuracy"] <= 1
+    assert 0 <= metrics["baseline_balanced_accuracy"] <= 1
+    assert (
+        metrics["test_class_0_count"]
+        + metrics["test_class_1_count"]
+        == 5
+    )
+    assert (
+        metrics["true_negative"]
+        + metrics["false_positive"]
+        + metrics["false_negative"]
+        + metrics["true_positive"]
+        == 5
+    )
+
 
 def test_training_requires_both_classes():
     records = make_records()
@@ -59,3 +74,8 @@ def test_training_rejects_too_few_examples_per_class():
 
     with pytest.raises(ValueError, match='at least two examples'):
         train_model(records)
+
+
+def test_training_rejects_invalid_test_size():
+    with pytest.raises(ValueError, match="test_size must be between 0 and 1",):
+        train_model(make_records(), test_size=1)
