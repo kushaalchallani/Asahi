@@ -8,6 +8,13 @@ from backend.ml.dataset import build_dataset, TARGET_COLUMN
 from backend.ml.experiment import make_synthetic_records
 from backend.ml.preprocessing import build_preprocessor
 
+def create_train_test_split(dataset, test_size=0.25, random_state=42):
+    x = dataset.drop(columns=[TARGET_COLUMN])
+    y = dataset[TARGET_COLUMN]
+
+    return train_test_split(x, y, test_size=test_size, random_state=random_state, stratify=y)
+
+
 
 def evaluate_model(name, model, x_train, x_test, y_train, y_test):
     model.fit(x_train, y_train)
@@ -42,13 +49,7 @@ def main():
     x = dataset.drop(columns=[TARGET_COLUMN])
     y = dataset[TARGET_COLUMN]
 
-    x_train, x_test, y_train, y_test = train_test_split(
-        x,
-        y,
-        test_size=0.25,
-        random_state=42,
-        stratify=y,
-    )
+    x_train, x_test, y_train, y_test = create_train_test_split(dataset)
 
     print(f"Total examples: {len(dataset)}")
     print(f"Training examples: {len(x_train)}")
