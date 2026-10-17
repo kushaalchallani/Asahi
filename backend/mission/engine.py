@@ -74,22 +74,33 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     if fresh_candidates:
         candidates = fresh_candidates
 
-    # Detect a repeated low-mood pattern in recent check-ins.
+    # Detect repeated low mood using recent feelings and notes.
     recent_check_ins = recent_check_ins or []
 
-    recent_feelings = [
-        (check_in.feeling or "").lower()
-        for check_in in recent_check_ins[:3]
+    recent_low_mood_words = [
+        "low",
+        "tired",
+        "sad",
+        "broken",
+        "overwhelmed",
+        "heartbroken",
+    ]
+
+    recent_mood_signals = [
+    (getattr(check_in, "feeling", None) or "").lower()
+    + " "
+    + (getattr(check_in, "note", None) or "").lower()
+    for check_in in recent_check_ins[:3]
     ]
 
     repeated_low_mood = (
-        len(recent_feelings) >= 2
+        len(recent_mood_signals) >= 2
         and all(
             any(
-                word in recent_feeling
-                for word in ["low", "tired", "sad"]
+                word in signal
+                for word in recent_low_mood_words
             )
-            for recent_feeling in recent_feelings
+            for signal in recent_mood_signals
         )
     )
 
