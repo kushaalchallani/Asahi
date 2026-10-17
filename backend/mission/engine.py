@@ -143,6 +143,30 @@ def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated
 
     return reasons
 
+def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission,):
+    reasons = explain_mission_score(
+        mission,
+        is_low_mood,
+        is_stressed,
+        is_lonely,
+        repeated_low_mood,
+        feedback_by_mission,
+    )
+
+    score = score_mission(
+        mission,
+        is_low_mood,
+        is_stressed,
+        is_lonely,
+        repeated_low_mood,
+        feedback_by_mission,
+    )
+
+    return {
+        "mission": mission,
+        "score": score,
+        "reasons": reasons,
+    }
 
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
