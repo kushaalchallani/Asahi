@@ -112,6 +112,37 @@ def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_moo
 
         return score
 
+def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission,):
+    reasons = []
+
+    if mission.energy_required == "low":
+        reasons.append("low_energy")
+
+    if not mission.social_required:
+        reasons.append("non_social")
+
+    if is_lonely and mission.category == "connection":
+        reasons.append("connection_for_loneliness")
+
+    if is_stressed and mission.category == "regulation":
+        reasons.append("regulation_for_stress")
+
+    if is_low_mood and mission.energy_required == "low":
+        reasons.append("low_energy_for_low_mood")
+
+    if repeated_low_mood and mission.energy_required == "low":
+        reasons.append("low_energy_for_repeated_low_mood")
+
+    feedback = feedback_by_mission.get(mission.id)
+
+    if feedback == "helpful":
+        reasons.append("previously_helpful")
+
+    if feedback == "not_for_me":
+        reasons.append("previously_not_for_me")
+
+    return reasons
+
 
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:

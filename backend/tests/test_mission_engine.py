@@ -1,7 +1,5 @@
-
 from types import SimpleNamespace
-
-from mission.engine import choose_mission
+from mission.engine import choose_mission, explain_mission_score
 
 
 def make_mission(
@@ -327,3 +325,24 @@ def test_empty_missions_returns_none_with_other_context():
     )
 
     assert result is None
+
+def test_explain_mission_score_reports_suitability_reasons():
+    mission = SimpleNamespace(
+        id=1,
+        energy_required="low",
+        social_required=False,
+        category="regulation",
+    )
+
+    reasons = explain_mission_score(
+        mission=mission,
+        is_low_mood=True,
+        is_stressed=False,
+        is_lonely=False,
+        repeated_low_mood=False,
+        feedback_by_mission={},
+    )
+
+    assert "low_energy" in reasons
+    assert "non_social" in reasons
+    assert "low_energy_for_low_mood" in reasons
