@@ -53,6 +53,35 @@ def detect_repeated_low_mood(recent_check_ins):
         )
     )
 
+def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
+    if is_low_mood:
+        candidates = [
+            mission
+            for mission in missions
+            if mission.energy_required == "low"
+            and not mission.social_required
+        ]
+    elif is_stressed:
+        candidates = [
+            mission
+            for mission in missions
+            if mission.category in [
+                "regulation",
+                "environment",
+                "reflection"
+            ]
+        ]
+    elif is_lonely:
+        candidates = [
+            mission
+            for mission in missions
+            if mission.energy_required == 'low'
+        ]
+    else: 
+        candidates = missions.copy()
+
+    return candidates or missions.copy()
+
 
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
@@ -68,31 +97,12 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     # Keep the original mission list for fallback recommendations.
     all_candidates = candidates.copy()
 
-    if is_low_mood:
-        candidates = [
-            mission
-            for mission in candidates
-            if mission.energy_required == "low"
-            and not mission.social_required
-        ]
-
-    elif is_stressed:
-        candidates = [
-            mission
-            for mission in candidates
-            if mission.category in [
-                "regulation",
-                "environment",
-                "reflection",
-            ]
-        ]
-
-    elif is_lonely:
-        candidates = [
-            mission
-            for mission in candidates
-            if mission.energy_required == "low"
-        ]
+    candidates = filter_suitable_missions(
+        missions,
+        is_low_mood,
+        is_stressed,
+        is_lonely,
+    )
 
     # Fall back to all missions if the strict filter finds no matches.
     if not candidates:
