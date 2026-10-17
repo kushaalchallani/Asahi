@@ -41,7 +41,9 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     is_lonely = "lonely" in feeling or "lonely" in note
 
-    # Filter missions according to the latest check-in.
+    # Keep the original mission list for fallback recommendations.
+    all_candidates = candidates.copy()
+
     if is_low_mood:
         candidates = [
             mission
@@ -68,8 +70,9 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
             if mission.energy_required == "low"
         ]
 
+    # Fall back to all missions if the strict filter finds no matches.
     if not candidates:
-        return None
+        candidates = all_candidates
 
     # Avoid repeating recently assigned missions when alternatives exist.
     recent_mission_ids = {

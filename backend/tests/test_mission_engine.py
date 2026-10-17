@@ -245,3 +245,21 @@ def test_not_for_me_feedback_loses_to_helpful_feedback():
     )
 
     assert result.id == 2
+
+def test_falls_back_when_low_mood_filter_has_no_matches():
+    check_in = make_check_in("A little low")
+
+    only_available_mission = make_mission(
+        1,
+        category="reflection",
+        energy_required="medium",
+        social_required=False
+    )
+
+    result = choose_mission(
+        check_in,
+        [],
+        [only_available_mission]
+    )
+
+    assert result.id == 1
