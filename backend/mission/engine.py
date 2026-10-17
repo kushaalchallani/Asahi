@@ -9,37 +9,61 @@ def build_feedback_history(feedback_rows):
 
     return feedback_by_mission
 
+LOW_MOOD_WORDS = [
+    "low",
+    "tired",
+    "broken",
+    "sad",
+    "overwhelmed",
+    "heartbroken",
+]
+
+STRESS_WORDS = ["stress", "stressed", "anxious"]
+
+
+def detect_mood(check_in):
+    feeling = (getattr(check_in, "feeling", None) or "").lower()
+    note = (getattr(check_in, "note", None) or "").lower()
+    text = f"{feeling} {note}"
+
+    return {
+        "is_low_mood": any(word in text for word in LOW_MOOD_WORDS),
+        "is_stressed": any(word in text for word in STRESS_WORDS),
+        "is_lonely": "lonely" in text,
+    }
+
+
+def detect_repeated_low_mood(recent_check_ins):
+    recent_check_ins = recent_check_ins or []
+
+    recent_mood_signals = [
+        (
+            (getattr(check_in, "feeling", None) or "").lower()
+            + " "
+            + (getattr(check_in, "note", None) or "").lower()
+        )
+        for check_in in recent_check_ins[:3]
+    ]
+
+    return (
+        len(recent_mood_signals) >= 2
+        and all(
+            any(word in signal for word in LOW_MOOD_WORDS)
+            for signal in recent_mood_signals
+        )
+    )
+
+
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
         return None
 
-    feeling = current_check_in.feeling.lower()
-    note = (current_check_in.note or "").lower()
-
     candidates = missions.copy()
+    mood = detect_mood(current_check_in)
 
-    low_mood_words = [
-        "low",
-        "tired",
-        "broken",
-        "sad",
-        "overwhelmed",
-        "heartbroken",
-    ]
-
-    stress_words = ["stress", "stressed", "anxious"]
-
-    is_low_mood = any(
-        word in feeling or word in note
-        for word in low_mood_words
-    )
-
-    is_stressed = any(
-        word in feeling or word in note
-        for word in stress_words
-    )
-
-    is_lonely = "lonely" in feeling or "lonely" in note
+    is_low_mood = mood["is_low_mood"]
+    is_stressed = mood["is_stressed"]
+    is_lonely = mood["is_lonely"]
 
     # Keep the original mission list for fallback recommendations.
     all_candidates = candidates.copy()
@@ -91,32 +115,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     # Detect repeated low mood using recent feelings and notes.
     recent_check_ins = recent_check_ins or []
 
-    recent_low_mood_words = [
-        "low",
-        "tired",
-        "sad",
-        "broken",
-        "overwhelmed",
-        "heartbroken",
-    ]
-
-    recent_mood_signals = [
-    (getattr(check_in, "feeling", None) or "").lower()
-    + " "
-    + (getattr(check_in, "note", None) or "").lower()
-    for check_in in recent_check_ins[:3]
-    ]
-
-    repeated_low_mood = (
-        len(recent_mood_signals) >= 2
-        and all(
-            any(
-                word in signal
-                for word in recent_low_mood_words
-            )
-            for signal in recent_mood_signals
-        )
-    )
+    repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
 
     feedback_by_mission = recent_feedback or {}
 

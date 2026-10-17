@@ -263,3 +263,67 @@ def test_falls_back_when_low_mood_filter_has_no_matches():
     )
 
     assert result.id == 1
+
+def test_low_mood_and_feedback_choose_suitable_alternative():
+    check_in = make_check_in("A little low")
+
+    recently_assigned = make_mission(
+        1,
+        energy_required="low",
+        social_required=False,
+    )
+    disliked_mission = make_mission(
+        2,
+        energy_required="low",
+        social_required=False,
+    )
+    suitable_alternative = make_mission(
+        3,
+        category="regulation",
+        energy_required="low",
+        social_required=False,
+    )
+
+    result = choose_mission(
+        check_in,
+        [recently_assigned],
+        [
+            recently_assigned,
+            disliked_mission,
+            suitable_alternative,
+        ],
+        recent_feedback={2: "not_for_me"},
+    )
+
+    assert result.id == 3
+
+def test_returns_a_mission_when_all_candidates_were_recently_assigned():
+    check_in = make_check_in("I'm doing okay")
+
+    mission_1 = make_mission(1)
+    mission_2 = make_mission(2)
+
+    result = choose_mission(
+        check_in,
+        [mission_1, mission_2],
+        [mission_1, mission_2],
+    )
+
+    assert result is not None
+    assert result.id in {1, 2}
+
+def test_empty_missions_returns_none_with_other_context():
+    check_in = make_check_in("A little low")
+
+    result = choose_mission(
+        check_in,
+        [],
+        [],
+        recent_feedback={1: "not_for_me"},
+        recent_check_ins=[
+            make_check_in("Tired"),
+            make_check_in("Sad"),
+        ],
+    )
+
+    assert result is None
