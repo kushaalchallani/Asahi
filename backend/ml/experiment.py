@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import make_scorer, precision_score, recall_score, balanced_accuracy_score
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
 from backend.ml.dataset import build_dataset, TARGET_COLUMN
 from backend.ml.preprocessing import build_preprocessor
 
@@ -102,7 +103,21 @@ def evaluate_thresholds(x, y) -> None:
             f"{recall:6.3f} | "
             f"{balanced_accuracy:18.3f}"
         )
-    
+
+def inspect_feature_importance(model, x, y) -> None:
+    model.fit(x, y)
+
+    classifier =  model.named_steps["classifier"]
+    preprocessor = model.named_steps['preprocessor']
+
+    feature_names = preprocessor.get_feature_names_out()
+    importances = classifier.feature_importances_
+
+    results = sorted(zip(feature_names, importances), key=lambda item: item[1], reverse=True)
+
+    print("\n--- Random Forest feature importance ---")
+    for feature, importance in results:
+        print(f"{feature:25s} {importance:.4f}")
 
 def main() -> None:
     dataset = build_dataset(make_synthetic_records())
@@ -115,7 +130,7 @@ def main() -> None:
 
     print(f"Synthetic examples: {len(dataset)}")
     print(f"Positive examples: {int(y.sum())}")
-    print(f"Positive examples: {int((y == 0).sum())}")
+    print(f"Negative examples: {int((y == 0).sum())}")
     print("\nUsing 5-fold stratified cross-validation.")
     print("Scores show mean across folds ± standard deviation.")
 
@@ -123,16 +138,40 @@ def main() -> None:
 
     evaluate_model('Dummy baseline', DummyClassifier(strategy='most_frequent'), x, y, cross_validation)
 
-    for name, class_weight in [
-        ("Standard logistic regression", None),
-        ("Balanced logistic regression", "balanced"),
-    ]:
-        model = Pipeline([
-            ("preprocessor", build_preprocessor()),
-            ("classifier", LogisticRegression(max_iter=1000, class_weight=class_weight))
-        ])
+    
+    models = [
+        (
+            "Standard logistic regression",
+            Pipeline([
+                ('preprocessor', build_preprocessor()),
+                ("classifier", LogisticRegression(max_iter=1000, class_weight=None))
+            ])
+        ),
+        (
+            "Balanced Logistic Regression",
+            Pipeline([
+                ("preprocessor", build_preprocessor()),
+                ("classifier", LogisticRegression(max_iter=1000, class_weight='balanced'))
+            ])
+        ),
+        (
+            "Random Forest",
+            Pipeline([
+                ("preprocessor", build_preprocessor()),
+                ("classifier", RandomForestClassifier(n_estimators=200, class_weight='balanced',random_state=42))
+            ])
+        )
+    ]
 
+    for name, model in models:
         evaluate_model(name, model, x, y, cross_validation)
+
+    random_forest = next(
+        model for name, model in models
+        if name == "Random Forest"
+    )
+    inspect_feature_importance(random_forest, x, y)
+
     evaluate_thresholds(x,y)
 
 if __name__ == "__main__":
