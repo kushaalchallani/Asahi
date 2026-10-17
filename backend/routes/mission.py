@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from sqlalchemy import desc
 from mission.engine import choose_mission
+from schemas.mission_feedback import MissionFeedbackRequest
 import models
 
 router = APIRouter(prefix='/missions', tags=['Missions'])
@@ -33,6 +34,7 @@ def get_today_mission(db: Session = Depends(get_db)):
         return {
             "mission": mission,
             "status": today_assignment.status,
+            "assignment_id": today_assignment.id,
         }
 
     current_check_in = (
@@ -104,19 +106,16 @@ def get_today_mission(db: Session = Depends(get_db)):
     return {
         "mission": mission,
         "status": user_mission.status,
+        "assignment_id": user_mission.id,
     }
 
 
-@router.post('/{mission_id}/start')
-def start_mission(mission_id: int, db: Session=Depends(get_db)):
-    user_mission = (
-        db.query(models.UserMission).filter(models.UserMission.mission_id == mission_id).order_by(models.UserMission.assigned_at.desc()).first()
-    )
+@router.post('/assignments/{assignment_id}/start')
+def start_mission(assignment_id: int, db: Session=Depends(get_db)):
+    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id).first())
 
     if not user_mission:
-        return {
-            "message": "Mission assignment not found."
-        }
+        raise HTTPException(status_code=404, detail="Mission assignment not found.")
 
     user_mission.status = 'started'
     user_mission.started_at = datetime.now()
@@ -126,16 +125,19 @@ def start_mission(mission_id: int, db: Session=Depends(get_db)):
 
     return user_mission
 
-@router.post("/{mission_id}/complete")
-def complete_mission(mission_id: int, db: Session=Depends(get_db)):
-    user_mission= (
-        db.query(models.UserMission).filter(models.UserMission.mission_id == mission_id, models.UserMission.status == 'started').order_by(models.UserMission.assigned_at.desc()).first()
+@router.post("/assignments/{assignment_id}/complete")
+def complete_mission(assignment_id: int, db: Session = Depends(get_db)):
+    user_mission = (
+        db.query(models.UserMission)
+        .filter(
+            models.UserMission.id == assignment_id,
+            models.UserMission.status == "started",
+        )
+        .first()
     )
 
     if not user_mission:
-        return {
-            "message": "Started mission not found."
-        }
+        raise HTTPException(status_code=404, detail="Mission assignment not found or not started.",)
 
     user_mission.status = "completed"
     user_mission.completed_at = datetime.now()
@@ -145,16 +147,22 @@ def complete_mission(mission_id: int, db: Session=Depends(get_db)):
 
     return user_mission
 
-@router.post("/{mission_id}/skip")
-def skip_mission(mission_id: int, db: Session = Depends(get_db)):
+@router.post("/assignments/{assignment_id}/skip")
+def skip_mission(assignment_id: int, db: Session = Depends(get_db)):
     user_mission = (
-        db.query(models.UserMission).filter(models.UserMission.mission_id == mission_id, models.UserMission.status == 'started').order_by(models.UserMission.assigned_at.desc()).first()
+        db.query(models.UserMission)
+        .filter(
+            models.UserMission.id == assignment_id,
+            models.UserMission.status == "started",
+        )
+        .first()
     )
 
     if not user_mission:
-        return {
-            "message": "Started mission not found."
-        }
+        raise HTTPException(
+            status_code=404,
+            detail="Mission assignment not found or not started.",
+        )
 
     user_mission.status = "skipped"
 
@@ -164,3 +172,22 @@ def skip_mission(mission_id: int, db: Session = Depends(get_db)):
     return user_mission
 
 
+@router.post("/assignments/{assignment_id}/feedback")
+def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest, db: Session = Depends(get_db)):
+    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id).first())
+
+    if not user_mission:
+        raise HTTPException(
+            status_code=404,
+            detail="Mission assignment not found."
+        )
+
+    user_mission.feedback = payload.feedback
+
+    db.commit()
+    db.refresh(user_mission)
+
+    return {
+        "assignment_id": user_mission.id,
+        "feedback": user_mission.feedback
+    }

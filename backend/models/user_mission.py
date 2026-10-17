@@ -23,6 +23,11 @@ class UserMission(Base):
         default="assigned"
     )
 
+    feedback: Mapped[str | None] = mapped_column(
+        String, 
+        nullable=True
+    )
+
     assigned_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.now,
