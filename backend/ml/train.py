@@ -1,12 +1,12 @@
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (accuracy_score, balanced_accuracy_score, confusion_matrix,)
+from sklearn.metrics import (accuracy_score, balanced_accuracy_score, confusion_matrix, precision_score, recall_score)
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.dummy import DummyClassifier
 from backend.ml.dataset import build_dataset, TARGET_COLUMN
 from backend.ml.preprocessing import build_preprocessor
 
-def train_model(records: list[dict], test_size: float = 0.25, random_state: int = 42) -> tuple[Pipeline, dict[str, float | int]]:
+def train_model(records: list[dict], test_size: float = 0.25, random_state: int = 42, class_weight: str | None = None) -> tuple[Pipeline, dict[str, float | int]]:
     if not 0 < test_size < 1:
         raise ValueError("test_size must be between 0 and 1.")
 
@@ -29,7 +29,7 @@ def train_model(records: list[dict], test_size: float = 0.25, random_state: int 
 
     model = Pipeline([
         ("preprocessor", build_preprocessor()),
-        ("classifier", LogisticRegression(max_iter=1000))
+        ("classifier", LogisticRegression(max_iter=1000, class_weight=class_weight))
     ])
 
     model.fit(x_train, y_train)
@@ -44,6 +44,12 @@ def train_model(records: list[dict], test_size: float = 0.25, random_state: int 
         "accuracy": float(accuracy_score(y_test, predictions)),
         "balanced_accuracy": float(
             balanced_accuracy_score(y_test, predictions)
+        ),
+        "precision": float(
+            precision_score(y_test, predictions, zero_division=0)
+        ),
+        "recall": float(
+            recall_score(y_test, predictions, zero_division=0)
         ),
         "baseline_accuracy": float(baseline_accuracy),
         "baseline_balanced_accuracy": float(
