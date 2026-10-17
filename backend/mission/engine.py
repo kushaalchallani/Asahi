@@ -82,6 +82,36 @@ def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
 
     return candidates or missions.copy()
 
+def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission):
+        score = 0
+
+        if mission.energy_required == "low":
+            score += 2
+
+        if not mission.social_required:
+            score += 1
+
+        if is_lonely and mission.category == "connection":
+            score += 3
+
+        if is_stressed and mission.category == "regulation":
+            score += 1
+
+        if is_low_mood and mission.energy_required == "low":
+            score += 3
+
+        if repeated_low_mood and mission.energy_required == "low":
+            score += 2
+
+        feedback = feedback_by_mission.get(mission.id)
+
+        if feedback == "not_for_me":
+            score -= 3
+        elif feedback == "helpful":
+            score += 2
+
+        return score
+
 
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
@@ -129,36 +159,16 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     feedback_by_mission = recent_feedback or {}
 
-    def score(mission):
-        mission_score = 0
-
-        if mission.energy_required == "low":
-            mission_score += 2
-
-        if not mission.social_required:
-            mission_score += 1
-
-        if is_lonely and mission.category == "connection":
-            mission_score += 3
-
-        if is_stressed and mission.category == "regulation":
-            mission_score += 1
-
-        if is_low_mood and mission.energy_required == "low":
-            mission_score += 3
-
-        if repeated_low_mood and mission.energy_required == "low":
-            mission_score += 2
-
-        feedback = feedback_by_mission.get(mission.id)
-
-        if feedback == "not_for_me":
-            mission_score -= 3
-        elif feedback == "helpful":
-            mission_score += 2
-
-        return mission_score
-
-    candidates.sort(key=score, reverse=True)
+    candidates.sort(
+        key=lambda mission: score_mission(
+            mission,
+            is_low_mood,
+            is_stressed,
+            is_lonely,
+            repeated_low_mood,
+            feedback_by_mission,
+        ),
+        reverse=True,
+    )
 
     return candidates[0]
