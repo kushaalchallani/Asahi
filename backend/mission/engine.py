@@ -138,8 +138,12 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
         if repeated_low_mood and mission.energy_required == "low":
             mission_score += 2
 
-        if feedback_by_mission.get(mission.id) == "not_for_me":
+        feedback = feedback_by_mission.get(mission.id)
+
+        if feedback == "not_for_me":
             mission_score -= 3
+        elif feedback == "helpful":
+            mission_score += 2
 
         return mission_score
 

@@ -211,3 +211,37 @@ def test_feedback_history_keeps_latest_feedback_for_each_mission():
         1: "not_for_me",
         2: "helpful",
     }
+
+def test_helpful_feedback_favours_mission():
+    check_in = make_check_in("I'm doing okay")
+
+    mission_1 = make_mission(1)
+    mission_2 = make_mission(2)
+
+    result = choose_mission(
+        check_in,
+        [],
+        [mission_1, mission_2],
+        recent_feedback={1: "helpful"},
+    )
+
+    assert result.id == 1
+
+
+def test_not_for_me_feedback_loses_to_helpful_feedback():
+    check_in = make_check_in("I'm doing okay")
+
+    disliked_mission = make_mission(1)
+    helpful_mission = make_mission(2)
+
+    result = choose_mission(
+        check_in,
+        [],
+        [disliked_mission, helpful_mission],
+        recent_feedback={
+            1: "not_for_me",
+            2: "helpful",
+        },
+    )
+
+    assert result.id == 2
