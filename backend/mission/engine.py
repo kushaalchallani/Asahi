@@ -47,6 +47,36 @@ def detect_mood(check_in):
         "is_lonely": "lonely" in text,
     }
 
+def infer_energy_preference(check_in):
+    text = " ".join([
+        getattr(check_in, "feeling", "") or "",
+        getattr(check_in, "note", "") or "",
+    ]).lower()
+
+    low_energy_signals = (
+        "exhausted",
+        "tired",
+        "fatigue",
+        "no energy",
+        "little energy",
+        "drained",
+        "worn out",
+    )
+
+    high_energy_signals = (
+        "energetic",
+        "full of energy",
+        "lots of energy",
+        "ready to be active",
+    )
+
+    if any(signal in text for signal in low_energy_signals):
+        return "low"
+
+    if any(signal in text for signal in high_energy_signals):
+        return "high"
+
+    return "medium"
 
 def detect_repeated_low_mood(recent_check_ins):
     recent_check_ins = recent_check_ins or []
@@ -243,10 +273,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     model = load_mission_model()
 
-    energy_preference = (
-        "low" if is_low_mood or is_stressed
-        else "medium"
-    )
+    energy_preference = infer_energy_preference(current_check_in)
 
     def ranking_score(mission):
         rule_score = score_mission(

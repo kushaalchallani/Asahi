@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from mission.engine import choose_mission, explain_mission_score, build_recommendation_result
+from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference
 
 
 def make_mission(
@@ -453,3 +453,64 @@ def test_rule_based_ranking_works_when_ml_model_unavailable(monkeypatch):
     )
 
     assert result.id == 1
+
+def test_infers_low_energy_from_explicit_low_energy_note():
+    check_in = make_check_in(
+        "I'm doing okay",
+        "I'm exhausted and have very little energy today",
+    )
+
+    assert infer_energy_preference(check_in) == "low"
+
+
+def test_infers_high_energy_from_explicit_high_energy_note():
+    check_in = make_check_in(
+        "I'm doing okay",
+        "I feel energetic and ready to be active",
+    )
+
+    assert infer_energy_preference(check_in) == "high"
+
+
+def test_defaults_to_medium_when_energy_is_unclear():
+    check_in = make_check_in("I'm doing okay", "Just checking in")
+
+    assert infer_energy_preference(check_in) == "medium"
+
+
+def test_handles_missing_note():
+    check_in = make_check_in("I'm doing okay")
+
+    assert infer_energy_preference(check_in) == "medium"
+
+
+def test_ml_ranking_receives_inferred_energy_preference(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in(
+        "I'm doing okay",
+        "I'm exhausted and have very little energy today",
+    )
+    mission = make_mission(1)
+
+    received = {}
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        lambda: object(),
+    )
+
+    def fake_predict(model, selected_mission, energy_preference, recently_seen=False):
+        received["energy_preference"] = energy_preference
+        return 0.5
+
+    monkeypatch.setattr(
+        engine,
+        "predict_mission_match",
+        fake_predict,
+    )
+
+    engine.choose_mission(check_in, [], [mission])
+
+    assert received["energy_preference"] == "low"
