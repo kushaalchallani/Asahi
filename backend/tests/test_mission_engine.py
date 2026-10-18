@@ -403,7 +403,7 @@ def test_ml_ranking_can_change_selected_mission(monkeypatch):
         2: 0.9,
     }
 
-    def fake_predict(model, mission, energy_preference):
+    def fake_predict(model, mission, energy_preference, recently_seen=False,):
         return scores[mission.id]
 
     monkeypatch.setattr(

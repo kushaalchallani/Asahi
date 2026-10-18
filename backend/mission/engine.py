@@ -1,3 +1,4 @@
+import pandas as pd
 from pathlib import Path
 from backend.ml.train import load_model
 
@@ -182,16 +183,14 @@ def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, re
         "reasons": reasons,
     }
 
-def predict_mission_match(model, mission, energy_preference):
-    import pandas as pd
-
+def predict_mission_match(model, mission, energy_preference, recently_seen=False):
     features = pd.DataFrame([{
         "category": mission.category,
         "difficulty": mission.difficulty,
         "energy_required": mission.energy_required,
         "social_required": mission.social_required,
         "energy_preference": energy_preference,
-        "recently_seen": False,
+        "recently_seen": recently_seen,
     }])
 
     return float(model.predict_proba(features)[0][1])
@@ -267,6 +266,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
                 model,
                 mission,
                 energy_preference,
+                recently_seen=mission.id in recent_mission_ids,
             )
         except (ValueError, KeyError, AttributeError, TypeError):
             return rule_score
