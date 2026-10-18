@@ -37,6 +37,7 @@ def make_synthetic_records() -> list[dict]:
             energy_required == energy_preference
             and difficulty == "low"
             and not recently_seen
+            and not social_required
         )
 
         records.append({

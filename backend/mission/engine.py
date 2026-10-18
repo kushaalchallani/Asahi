@@ -1,3 +1,17 @@
+from pathlib import Path
+from backend.ml.train import load_model
+
+MODEL_PATH = (Path(__file__).resolve().parents[1]/ "ml"/ "artifacts"/ "mission_recommender.joblib")
+
+def load_mission_model():
+    if not MODEL_PATH.exists():
+        return None
+
+    try:
+        return load_model(MODEL_PATH)
+    except (OSError, ValueError, ImportError):
+        return None
+
 def build_feedback_history(feedback_rows):
     feedback_by_mission = {}
 
@@ -168,6 +182,20 @@ def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, re
         "reasons": reasons,
     }
 
+def predict_mission_match(model, mission, energy_preference):
+    import pandas as pd
+
+    features = pd.DataFrame([{
+        "category": mission.category,
+        "difficulty": mission.difficulty,
+        "energy_required": mission.energy_required,
+        "social_required": mission.social_required,
+        "energy_preference": energy_preference,
+        "recently_seen": False,
+    }])
+
+    return float(model.predict_proba(features)[0][1])
+
 def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
     if not missions:
         return None
@@ -214,16 +242,37 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     feedback_by_mission = recent_feedback or {}
 
-    candidates.sort(
-        key=lambda mission: score_mission(
+    model = load_mission_model()
+
+    energy_preference = (
+        "low" if is_low_mood or is_stressed
+        else "medium"
+    )
+
+    def ranking_score(mission):
+        rule_score = score_mission(
             mission,
             is_low_mood,
             is_stressed,
             is_lonely,
             repeated_low_mood,
             feedback_by_mission,
-        ),
-        reverse=True,
-    )
+        )
+
+        if model is None:
+            return rule_score
+
+        try:
+            ml_score = predict_mission_match(
+                model,
+                mission,
+                energy_preference,
+            )
+        except (ValueError, KeyError, AttributeError, TypeError):
+            return rule_score
+
+        return rule_score + ml_score
+
+    candidates.sort(key=ranking_score, reverse=True)
 
     return candidates[0]

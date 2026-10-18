@@ -1,3 +1,4 @@
+import joblib
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, balanced_accuracy_score, confusion_matrix, precision_score, recall_score)
 from sklearn.model_selection import train_test_split
@@ -64,3 +65,10 @@ def train_model(records: list[dict], test_size: float = 0.25, random_state: int 
     }
 
     return model, metrics
+
+def save_model(model, path):
+    joblib.dump(model, path)
+
+
+def load_model(path):
+    return joblib.load(path)
