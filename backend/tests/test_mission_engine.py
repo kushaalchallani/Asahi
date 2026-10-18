@@ -368,3 +368,88 @@ def test_build_recommendation_result_contains_mission_score_and_reasons():
     assert isinstance(result["score"], int)
     assert "low_energy" in result["reasons"]
     assert "non_social" in result["reasons"]
+
+
+def test_ml_ranking_can_change_selected_mission(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in("I'm doing okay")
+
+    mission_one = make_mission(
+        1,
+        category="reflection",
+        energy_required="medium",
+        social_required=False,
+    )
+
+    mission_two = make_mission(
+        2,
+        category="reflection",
+        energy_required="medium",
+        social_required=False,
+    )
+
+    class FakeModel:
+        pass
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        lambda: FakeModel(),
+    )
+
+    scores = {
+        1: 0.1,
+        2: 0.9,
+    }
+
+    def fake_predict(model, mission, energy_preference):
+        return scores[mission.id]
+
+    monkeypatch.setattr(
+        engine,
+        "predict_mission_match",
+        fake_predict,
+    )
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [mission_one, mission_two],
+    )
+
+    assert result.id == 2
+
+
+def test_rule_based_ranking_works_when_ml_model_unavailable(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in("I'm doing okay")
+
+    mission_one = make_mission(
+        1,
+        category="reflection",
+        energy_required="low",
+        social_required=False,
+    )
+
+    mission_two = make_mission(
+        2,
+        category="reflection",
+        energy_required="medium",
+        social_required=True,
+    )
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        lambda: None,
+    )
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [mission_one, mission_two],
+    )
+
+    assert result.id == 1
