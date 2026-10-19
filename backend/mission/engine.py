@@ -294,6 +294,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     energy_preference = infer_energy_preference(current_check_in)
 
+    
     def ranking_score(mission):
         rule_score = score_mission(
             mission,
@@ -315,9 +316,10 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
                 recently_seen=mission.id in recent_mission_ids,
             )
         except (ValueError, KeyError, AttributeError, TypeError):
-            return (rule_score, 0.0)
+            return rule_score
 
-        return (rule_score, ml_score)
+        # keep the rule based preferences primary with ml as tie-breaker
+        return rule_score + ml_score
 
     candidates.sort(key=ranking_score, reverse=True)
 

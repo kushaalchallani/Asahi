@@ -124,10 +124,13 @@ def get_today_mission(db: Session = Depends(get_db)):
 
 @router.post('/assignments/{assignment_id}/start')
 def start_mission(assignment_id: int, db: Session=Depends(get_db)):
-    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id).first())
+    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id, models.UserMission.status == "assigned").first())
 
     if not user_mission:
-        raise HTTPException(status_code=404, detail="Mission assignment not found.")
+        raise HTTPException(
+        status_code=409,
+        detail="Mission assignment not found or already started, completed, or skipped.",
+    )
 
     user_mission.status = 'started'
     user_mission.started_at = datetime.now()
@@ -192,6 +195,18 @@ def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest,
         raise HTTPException(
             status_code=404,
             detail="Mission assignment not found."
+        )
+
+    if user_mission.status not in ("completed", "skipped"):
+        raise HTTPException(
+        status_code=409,
+        detail="Feedback can only be submitted after completing or skipping a mission.",
+    )
+
+    if user_mission.feedback is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Feedback has already been submitted for this mission.",
         )
 
     user_mission.feedback = payload.feedback
