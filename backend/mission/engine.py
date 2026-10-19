@@ -183,6 +183,37 @@ def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated
 
     return reasons
 
+def format_mission_reasons(reasons):
+    messages = {
+        "low_energy": "This activity requires little energy.",
+        "non_social": "You can do this activity on your own.",
+        "connection_for_loneliness": (
+            "This activity offers an opportunity for connection."
+        ),
+        "regulation_for_stress": (
+            "This activity may help you pause and unwind."
+        ),
+        "low_energy_for_low_mood": (
+            "This is a manageable activity for a difficult day."
+        ),
+        "low_energy_for_repeated_low_mood": (
+            "This activity keeps the effort manageable."
+        ),
+        "previously_helpful": (
+            "You've found this activity helpful before."
+        ),
+        "previously_not_for_me": (
+            "You've previously indicated this activity wasn't a good fit."
+        ),
+    }
+
+    return [
+        messages[reason]
+        for reason in reasons
+        if reason in messages
+    ]
+
+
 def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission,):
     reasons = explain_mission_score(
         mission,
@@ -206,6 +237,7 @@ def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, re
         "mission": mission,
         "score": score,
         "reasons": reasons,
+        "explanations": format_mission_reasons(reasons),
     }
 
 def predict_mission_match(model, mission, energy_preference, recently_seen=False):

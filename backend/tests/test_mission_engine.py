@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference
+from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons
 
 
 def make_mission(
@@ -580,3 +580,19 @@ def test_ml_does_not_override_low_energy_suitability(monkeypatch):
     )
 
     assert result.id == 2
+
+def test_format_mission_reasons():
+    reasons = [
+        "low_energy",
+        "connection_for_loneliness",
+        "unknown_reason",
+    ]
+
+    messages = format_mission_reasons(reasons)
+
+    assert "This activity requires little energy." in messages
+    assert (
+        "This activity offers an opportunity for connection."
+        in messages
+    )
+    assert len(messages) == 2
