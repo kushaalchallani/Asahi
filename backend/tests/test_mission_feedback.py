@@ -39,7 +39,8 @@ def client():
 
             assignment = UserMission(
                 mission_id=mission.id,
-                status="started",
+                status="completed",
+                feedback=None,
             )
             db.add(assignment)
             db.commit()
