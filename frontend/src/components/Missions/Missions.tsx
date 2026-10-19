@@ -4,12 +4,15 @@ interface MissionProps {
   mission: MissionData | null
   status: string
   loading: boolean
+  feedbackLoading: boolean
+  feedbackSubmitted: boolean
+  onFeedback: (feedback: "helpful" | "not_for_me" | "not_sure") => void
   onStart: () => void
   onComplete: () => void
   onSkip: () => void
 }
 
-function Missions({mission, status, loading, onStart, onComplete, onSkip}: MissionProps){
+function Missions({mission, status, loading, feedbackLoading, feedbackSubmitted, onStart, onComplete, onSkip, onFeedback}: MissionProps){
     if (loading || !mission) {
         return null
     }
@@ -39,6 +42,32 @@ function Missions({mission, status, loading, onStart, onComplete, onSkip}: Missi
             {status === "skipped" && (
             <p>No pressure. You can leave it for today.</p>
             )}
+
+            {(status === "completed" || status === "skipped") && (
+                <div className="mission-feedback">
+                {!feedbackSubmitted ? (
+                    <>
+                    <p>How was this mission for you?</p>
+
+                    <button onClick={() => onFeedback("helpful")} disabled={feedbackLoading}>
+                        Helpful
+                    </button>
+
+                    <button onClick={() => onFeedback("not_for_me")} disabled={feedbackLoading}>
+                        Not for me
+                    </button>
+
+                    <button onClick={() => onFeedback("not_sure")} disabled={feedbackLoading}>
+                        Not sure
+                    </button>
+
+                    {feedbackLoading && <p>Submitting feedback...</p>}
+                    </>
+                ) : (
+                    <p>Thanks for sharing your feedback.</p>
+                )}
+                </div>
+                )}
         </div>
     )
 }

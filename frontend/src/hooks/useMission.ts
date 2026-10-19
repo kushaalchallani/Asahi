@@ -1,12 +1,7 @@
 
 import { useCallback, useEffect, useState } from "react"
-import {
-  completeMission,
-  getTodayMission,
-  skipMission,
-  startMission,
-} from "../services/api"
-import type { Mission as MissionData } from "../services/api"
+import { completeMission, getTodayMission, skipMission, startMission, submitMissionFeedback} from "../services/api"
+import type { Mission as MissionData, MissionFeedback } from "../services/api"
 
 export type MissionStatus = "assigned" | "started" | "completed" | "skipped"
 
@@ -14,12 +9,16 @@ export function useMission() {
   const [mission, setMission] = useState<MissionData | null>(null)
   const [status, setStatus] = useState<MissionStatus>("assigned")
   const [loading, setLoading] = useState(true)
+  const [assignmentId, setAssignmentId] = useState<number | null>(null)
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
 
   useEffect(() => {
     async function loadMission() {
       try {
         const data = await getTodayMission()
         setMission(data.mission)
+        setAssignmentId(data.assignment_id ?? null)
 
         if (
           data.status === "assigned" ||
@@ -40,10 +39,10 @@ export function useMission() {
   }, [])
 
   const start = useCallback(async () => {
-    if (!mission) return
+    if (!assignmentId) return
 
     try {
-      await startMission(mission.id)
+      await startMission(assignmentId)
       setStatus("started")
     } catch (error) {
       console.error("Failed to start mission:", error)
@@ -51,10 +50,10 @@ export function useMission() {
   }, [mission])
 
   const complete = useCallback(async () => {
-    if (!mission) return
+    if (!assignmentId) return
 
     try {
-      await completeMission(mission.id)
+      await completeMission(assignmentId)
       setStatus("completed")
     } catch (error) {
       console.error("Failed to complete mission:", error)
@@ -62,15 +61,32 @@ export function useMission() {
   }, [mission])
 
   const skip = useCallback(async () => {
-    if (!mission) return
+    if (!assignmentId) return
 
     try {
-      await skipMission(mission.id)
+      await skipMission(assignmentId)
       setStatus("skipped")
     } catch (error) {
       console.error("Failed to skip mission:", error)
     }
   }, [mission])
 
-  return { mission, status, loading, start, complete, skip }
+  const submitFeedback = useCallback( async (feedback: MissionFeedback) => {
+    if (!assignmentId || feedbackLoading || feedbackSubmitted) return
+
+    setFeedbackLoading(true)
+
+    try {
+      await submitMissionFeedback(assignmentId, feedback)
+      setFeedbackSubmitted(true)
+    } catch (error) {
+      console.error("Failed to submit mission feedback:", error)
+    } finally {
+      setFeedbackLoading(false)
+    }
+  },
+  [assignmentId, feedbackLoading, feedbackSubmitted]
+)
+
+  return { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted,}
 }

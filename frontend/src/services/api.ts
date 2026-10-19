@@ -2,6 +2,8 @@ import type { CheckIn } from "../types/checkIn"
 
 const API_URL = "http://localhost:8000"
 
+export type MissionFeedback = "helpful" | "not_for_me" | "not_sure"
+
 export interface CheckInInsights {
   check_in_count: number
   most_common_feeling: string | null
@@ -20,6 +22,8 @@ export interface Mission {
 export interface TodayMission {
   mission: Mission | null
   status: string
+  assignment_id?: number
+  message?: string
 }
 
 export async function createCheckIn(
@@ -74,8 +78,8 @@ export async function getTodayMission(): Promise<TodayMission> {
   return response.json()
 }
 
-export async function startMission(missionId: number) {
-  const response = await fetch(`${API_URL}/missions/${missionId}/start`, {
+export async function startMission(assignmentId: number) {
+  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/start`, {
     method: "POST",
   })
 
@@ -86,8 +90,8 @@ export async function startMission(missionId: number) {
   return response.json()
 }
 
-export async function completeMission(missionId: number) {
-  const response = await fetch(`${API_URL}/missions/${missionId}/complete`, {
+export async function completeMission(assignmentId: number) {
+  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/complete`, {
     method: "POST",
   })
 
@@ -98,13 +102,35 @@ export async function completeMission(missionId: number) {
   return response.json()
 }
 
-export async function skipMission(missionId: number) {
-  const response = await fetch(`${API_URL}/missions/${missionId}/skip`, {
+export async function skipMission(assignmentId: number) {
+  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/skip`, {
     method: "POST",
   })
 
   if (!response.ok) {
     throw new Error("Failed to skip mission")
+  }
+
+  return response.json()
+}
+
+export async function submitMissionFeedback(
+  assignmentId: number,
+  feedback: MissionFeedback
+) {
+  const response = await fetch(
+    `${API_URL}/missions/assignments/${assignmentId}/feedback`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ feedback }),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to submit mission feedback")
   }
 
   return response.json()

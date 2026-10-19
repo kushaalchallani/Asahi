@@ -13,7 +13,7 @@ import "./App.css"
 function App() {
   const { insights, refreshInsights } = useInsights()
   const { checkIns, handleCheckInCreated } = useCheckIns(refreshInsights)
-  const { mission, status, loading, start, complete, skip} = useMission()
+  const { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted} = useMission()
 
   return (
     <main className="app">
@@ -30,6 +30,9 @@ function App() {
           onStart={start}
           onComplete={complete}
           onSkip={skip}
+          onFeedback={submitFeedback}
+          feedbackLoading={feedbackLoading}
+          feedbackSubmitted={feedbackSubmitted}
         />
         <Insights insights={insights} />
         <History checkIns={checkIns} />

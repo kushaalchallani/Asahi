@@ -1,6 +1,6 @@
 import pandas as pd
 from pathlib import Path
-from backend.ml.train import load_model
+from ml.train import load_model
 
 MODEL_PATH = (Path(__file__).resolve().parents[1]/ "ml"/ "artifacts"/ "mission_recommender.joblib")
 

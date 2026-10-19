@@ -4,8 +4,8 @@ from sklearn.metrics import (accuracy_score, balanced_accuracy_score, confusion_
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.dummy import DummyClassifier
-from backend.ml.dataset import build_dataset, TARGET_COLUMN
-from backend.ml.preprocessing import build_preprocessor
+from ml.dataset import build_dataset, TARGET_COLUMN
+from ml.preprocessing import build_preprocessor
 
 def train_model(records: list[dict], test_size: float = 0.25, random_state: int = 42, class_weight: str | None = None) -> tuple[Pipeline, dict[str, float | int]]:
     if not 0 < test_size < 1:

@@ -75,10 +75,6 @@ def get_today_mission(db: Session = Depends(get_db)):
 
     recent_feedback = build_feedback_history(feedback_rows)
 
-    for user_mission in feedback_rows:
-        if user_mission.mission_id not in recent_feedback:
-            recent_feedback[user_mission.mission_id] = user_mission.feedback
-
     recent_mission_ids = [
         user_mission.mission_id
         for user_mission in recent_user_missions
