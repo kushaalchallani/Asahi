@@ -48,10 +48,9 @@ def detect_mood(check_in):
     }
 
 def infer_energy_preference(check_in):
-    text = " ".join([
-        getattr(check_in, "feeling", "") or "",
-        getattr(check_in, "note", "") or "",
-    ]).lower()
+    feeling = (getattr(check_in, "feeling", None) or "").lower()
+    note = (getattr(check_in, "note", None) or "").lower()
+    text = f"{feeling} {note}"
 
     low_energy_signals = (
         "exhausted",
@@ -76,27 +75,28 @@ def infer_energy_preference(check_in):
     if any(signal in text for signal in high_energy_signals):
         return "high"
 
+    if any(signal in feeling for signal in ("a little low", "stressed", "lonely")):
+        return "low"
+
     return "medium"
 
 def detect_repeated_low_mood(recent_check_ins):
-    recent_check_ins = recent_check_ins or []
+    recent_check_ins = (recent_check_ins or [])[:3]
 
-    recent_mood_signals = [
-        (
-            (getattr(check_in, "feeling", None) or "").lower()
-            + " "
-            + (getattr(check_in, "note", None) or "").lower()
-        )
-        for check_in in recent_check_ins[:3]
-    ]
+    if len(recent_check_ins) < 2:
+        return False
 
-    return (
-        len(recent_mood_signals) >= 2
-        and all(
-            any(word in signal for word in LOW_MOOD_WORDS)
-            for signal in recent_mood_signals
-        )
-    )
+    low_mood_count = 0
+
+    for check_in in recent_check_ins:
+        feeling = (getattr(check_in, "feeling", None) or "").lower()
+        note = (getattr(check_in, "note", None) or "").lower()
+        text = f"{feeling} {note}"
+
+        if any(word in text for word in LOW_MOOD_WORDS):
+            low_mood_count += 1
+
+    return low_mood_count >= 2
 
 def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
     if is_low_mood:
