@@ -43,7 +43,7 @@ function Missions({mission, status, loading, feedbackLoading, feedbackSubmitted,
             <p>No pressure. You can leave it for today.</p>
             )}
 
-            {(status === "completed" || status === "skipped") && (
+            {(status === "completed" || status === "skipped") && !feedbackSubmitted && (
                 <div className="mission-feedback">
                 {!feedbackSubmitted ? (
                     <>

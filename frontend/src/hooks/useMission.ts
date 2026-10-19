@@ -19,6 +19,7 @@ export function useMission() {
         const data = await getTodayMission()
         setMission(data.mission)
         setAssignmentId(data.assignment_id ?? null)
+        setFeedbackSubmitted(data.feedback != null)
 
         if (
           data.status === "assigned" ||

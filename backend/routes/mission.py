@@ -35,6 +35,7 @@ def get_today_mission(db: Session = Depends(get_db)):
             "mission": mission,
             "status": today_assignment.status,
             "assignment_id": today_assignment.id,
+            "feedback": today_assignment.feedback,
         }
 
     current_check_in = (

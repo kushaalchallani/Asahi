@@ -24,6 +24,7 @@ export interface TodayMission {
   status: string
   assignment_id?: number
   message?: string
+  feedback?: MissionFeedback | null
 }
 
 export async function createCheckIn(
