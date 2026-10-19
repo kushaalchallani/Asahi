@@ -596,3 +596,40 @@ def test_format_mission_reasons():
         in messages
     )
     assert len(messages) == 2
+
+def test_rule_based_ranking_works_when_model_fails(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in("I'm doing okay")
+
+    mission_one = make_mission(
+        1,
+        category="reflection",
+        energy_required="medium",
+        social_required=False,
+    )
+
+    mission_two = make_mission(
+        2,
+        category="reflection",
+        energy_required="low",
+        social_required=False,
+    )
+
+    def fail_to_load_model():
+        raise RuntimeError("Model unavailable")
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        fail_to_load_model,
+    )
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [mission_one, mission_two],
+    )
+
+    assert result is not None
+    assert result.id == 2

@@ -12,12 +12,14 @@ export function useMission() {
   const [assignmentId, setAssignmentId] = useState<number | null>(null)
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [reasons, setReasons] = useState<string[]>([])
 
   useEffect(() => {
     async function loadMission() {
       try {
         const data = await getTodayMission()
         setMission(data.mission)
+        setReasons(data.reasons ?? [])
         setAssignmentId(data.assignment_id ?? null)
         setFeedbackSubmitted(data.feedback != null)
 
@@ -89,5 +91,5 @@ export function useMission() {
   [assignmentId, feedbackLoading, feedbackSubmitted]
 )
 
-  return { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted,}
+  return { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted, reasons}
 }

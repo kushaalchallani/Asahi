@@ -6,13 +6,14 @@ interface MissionProps {
   loading: boolean
   feedbackLoading: boolean
   feedbackSubmitted: boolean
+  reasons: string[]
   onFeedback: (feedback: "helpful" | "not_for_me" | "not_sure") => void
   onStart: () => void
   onComplete: () => void
   onSkip: () => void
 }
 
-function Missions({mission, status, loading, feedbackLoading, feedbackSubmitted, onStart, onComplete, onSkip, onFeedback}: MissionProps){
+function Missions({mission, status, loading, feedbackLoading, feedbackSubmitted, reasons, onStart, onComplete, onSkip, onFeedback}: MissionProps){
     if (loading || !mission) {
         return null
     }
@@ -23,6 +24,17 @@ function Missions({mission, status, loading, feedbackLoading, feedbackSubmitted,
 
             <h2>{mission.title}</h2>
             <p>{mission.description}</p>
+
+            {reasons.length > 0 && (
+                <div className="mission-reasons">
+                    <p>Why this was recommended</p>
+                    <ul>
+                    {reasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                    ))}
+                    </ul>
+                </div>
+            )}
 
             {status === "assigned" && (
             <button onClick={onStart}>Start mission</button>

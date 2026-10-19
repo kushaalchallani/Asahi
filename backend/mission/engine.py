@@ -202,9 +202,6 @@ def format_mission_reasons(reasons):
         "previously_helpful": (
             "You've found this activity helpful before."
         ),
-        "previously_not_for_me": (
-            "You've previously indicated this activity wasn't a good fit."
-        ),
     }
 
     return [

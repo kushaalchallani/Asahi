@@ -3,12 +3,26 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from sqlalchemy import desc
-from mission.engine import choose_mission, build_feedback_history
+from mission.engine import choose_mission, build_feedback_history, explain_mission_score, format_mission_reasons, detect_mood, detect_repeated_low_mood
 from schemas.mission_feedback import MissionFeedbackRequest
 import models
 
 router = APIRouter(prefix='/missions', tags=['Missions'])
 
+def get_mission_reasons(mission, current_check_in, recent_check_ins, recent_feedback):
+    mood = detect_mood(current_check_in)
+    repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
+
+    reason_codes = explain_mission_score(
+        mission,
+        is_low_mood=mood["is_low_mood"],
+        is_stressed=mood["is_stressed"],
+        is_lonely=mood["is_lonely"],
+        repeated_low_mood=repeated_low_mood,
+        feedback_by_mission=recent_feedback,
+    )
+
+    return format_mission_reasons(reason_codes)
 
 @router.get("/today")
 def get_today_mission(db: Session = Depends(get_db)):
@@ -31,11 +45,47 @@ def get_today_mission(db: Session = Depends(get_db)):
             .first()
         )
 
+        current_check_in = (
+            db.query(models.CheckIn)
+            .order_by(desc(models.CheckIn.created_at))
+            .first()
+        )
+
+        reasons = []
+
+        if current_check_in and mission:
+            week_ago = datetime.now() - timedelta(days=7)
+
+            recent_check_ins = (
+                db.query(models.CheckIn)
+                .filter(models.CheckIn.created_at >= week_ago)
+                .order_by(desc(models.CheckIn.created_at))
+                .all()
+            )
+
+            feedback_rows = (
+                db.query(models.UserMission)
+                .filter(models.UserMission.feedback.isnot(None))
+                .order_by(desc(models.UserMission.assigned_at))
+                .limit(50)
+                .all()
+            )
+
+            recent_feedback = build_feedback_history(feedback_rows)
+
+            reasons = get_mission_reasons(
+                mission,
+                current_check_in,
+                recent_check_ins,
+                recent_feedback,
+            )
+
         return {
             "mission": mission,
             "status": today_assignment.status,
             "assignment_id": today_assignment.id,
             "feedback": today_assignment.feedback,
+            "reasons": reasons,
         }
 
     current_check_in = (
@@ -107,6 +157,20 @@ def get_today_mission(db: Session = Depends(get_db)):
             "message": "No suitable mission found.",
         }
 
+    mood = detect_mood(current_check_in)
+    repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
+
+    reason_codes = explain_mission_score(
+        mission,
+        is_low_mood=mood["is_low_mood"],
+        is_stressed=mood["is_stressed"],
+        is_lonely=mood["is_lonely"],
+        repeated_low_mood=repeated_low_mood,
+        feedback_by_mission=recent_feedback,
+    )
+
+    reasons = format_mission_reasons(reason_codes)
+
     user_mission = models.UserMission(
         mission_id=mission.id,
         status="assigned",
@@ -120,6 +184,7 @@ def get_today_mission(db: Session = Depends(get_db)):
         "mission": mission,
         "status": user_mission.status,
         "assignment_id": user_mission.id,
+        "reasons":reasons
     }
 
 
