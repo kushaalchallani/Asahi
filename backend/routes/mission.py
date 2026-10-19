@@ -68,10 +68,11 @@ def get_today_mission(db: Session = Depends(get_db)):
     )
 
     feedback_rows = (
-    db.query(models.UserMission)
-    .filter(models.UserMission.feedback.isnot(None))
-    .order_by(desc(models.UserMission.id))
-    .all()
+        db.query(models.UserMission)
+        .filter(models.UserMission.feedback.isnot(None))
+        .order_by(desc(models.UserMission.assigned_at))
+        .limit(50)
+        .all()
     )
 
     recent_feedback = build_feedback_history(feedback_rows)
