@@ -287,7 +287,10 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
 
-    model = load_mission_model()
+    try:
+        model = load_mission_model()
+    except Exception:
+        model = None
 
     energy_preference = infer_energy_preference(current_check_in)
 
