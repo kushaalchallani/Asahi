@@ -301,7 +301,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
         )
 
         if model is None:
-            return rule_score
+            return (rule_score, 0.0)
 
         try:
             ml_score = predict_mission_match(
@@ -311,10 +311,9 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
                 recently_seen=mission.id in recent_mission_ids,
             )
         except (ValueError, KeyError, AttributeError, TypeError):
-            return rule_score
+            ml_score = 0.0
 
-        # keep the rule based preferences primary with ml as tie-breaker
-        return rule_score + ml_score
+        return (rule_score, ml_score)
 
     candidates.sort(key=ranking_score, reverse=True)
 
