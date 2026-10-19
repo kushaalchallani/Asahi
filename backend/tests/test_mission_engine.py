@@ -514,3 +514,69 @@ def test_ml_ranking_receives_inferred_energy_preference(monkeypatch):
     engine.choose_mission(check_in, [], [mission])
 
     assert received["energy_preference"] == "low"
+
+def test_ml_does_not_override_not_for_me_feedback(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in("I'm doing okay")
+
+    disliked_mission = make_mission(1)
+    alternative_mission = make_mission(2)
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        lambda: object(),
+    )
+    monkeypatch.setattr(
+        engine,
+        "predict_mission_match",
+        lambda model, mission, energy_preference, recently_seen=False:
+            1.0 if mission.id == 1 else 0.0,
+    )
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [disliked_mission, alternative_mission],
+        recent_feedback={1: "not_for_me"},
+    )
+
+    assert result.id == 2
+
+
+def test_ml_does_not_override_low_energy_suitability(monkeypatch):
+    import mission.engine as engine
+
+    check_in = make_check_in("A little low")
+
+    high_energy_mission = make_mission(
+        1,
+        energy_required="high",
+        social_required=True,
+    )
+    low_energy_mission = make_mission(
+        2,
+        energy_required="low",
+        social_required=False,
+    )
+
+    monkeypatch.setattr(
+        engine,
+        "load_mission_model",
+        lambda: object(),
+    )
+    monkeypatch.setattr(
+        engine,
+        "predict_mission_match",
+        lambda model, mission, energy_preference, recently_seen=False:
+            1.0 if mission.id == 1 else 0.0,
+    )
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [high_energy_mission, low_energy_mission],
+    )
+
+    assert result.id == 2

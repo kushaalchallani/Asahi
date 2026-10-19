@@ -125,7 +125,7 @@ def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
     else: 
         candidates = missions.copy()
 
-    return candidates or missions.copy()
+    return candidates
 
 def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission):
         score = 0
@@ -267,9 +267,25 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     # Detect repeated low mood using recent feelings and notes.
     recent_check_ins = recent_check_ins or []
 
-    repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
-
     feedback_by_mission = recent_feedback or {}
+
+    disliked_candidates = [
+    mission
+    for mission in candidates
+    if feedback_by_mission.get(mission.id) == "not_for_me"
+]
+
+    if disliked_candidates and len(disliked_candidates) == len(candidates):
+        # Keep a fallback if every available candidate was disliked.
+        pass
+    else:
+        candidates = [
+            mission
+            for mission in candidates
+            if feedback_by_mission.get(mission.id) != "not_for_me"
+        ]
+
+    repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
 
     model = load_mission_model()
 
@@ -296,9 +312,9 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
                 recently_seen=mission.id in recent_mission_ids,
             )
         except (ValueError, KeyError, AttributeError, TypeError):
-            return rule_score
+            return (rule_score, 0.0)
 
-        return rule_score + ml_score
+        return (rule_score, ml_score)
 
     candidates.sort(key=ranking_score, reverse=True)
 
