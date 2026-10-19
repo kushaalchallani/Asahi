@@ -1,15 +1,22 @@
 from core.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import DateTime, String, Integer
+from sqlalchemy import DateTime, ForeignKey, String, Integer
 from datetime import datetime
 
 class UserMission(Base):
     __tablename__ = 'user_missions'
 
     id: Mapped[int] = mapped_column(
-                Integer,
-                primary_key=True,
-                index=True
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
 
     mission_id: Mapped[int] = mapped_column(
@@ -24,7 +31,7 @@ class UserMission(Base):
     )
 
     feedback: Mapped[str | None] = mapped_column(
-        String, 
+        String,
         nullable=True
     )
 

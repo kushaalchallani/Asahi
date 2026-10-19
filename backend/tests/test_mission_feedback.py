@@ -7,6 +7,7 @@ from core.database import Base
 from dependencies.database import get_db
 from main import app
 from models.mission import Mission
+from models.user import User
 from models.user_mission import UserMission
 
 @pytest.fixture
@@ -37,7 +38,15 @@ def client():
             db.add(mission)
             db.flush()
 
+            user = User(
+                email="feedback-test@example.com",
+                password_hash=None,
+                is_active=True,
+            )
+            db.add(user)
+            db.flush()
             assignment = UserMission(
+                user_id=user.id,
                 mission_id=mission.id,
                 status="completed",
                 feedback=None,
