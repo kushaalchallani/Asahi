@@ -4,6 +4,7 @@ import CheckIn from "./components/CheckIn/CheckIn"
 import History from "./components/History/History"
 import Insights from "./components/Insights/Insights"
 import Missions from "./components/Missions/Missions"
+import Landing from "./components/Landing/Landing"
 import { useCheckIns } from "./hooks/useCheckIns"
 import { useInsights } from "./hooks/useInsights"
 import { useMission } from "./hooks/useMission"
@@ -52,6 +53,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 function App() {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [checkingSession, setCheckingSession] = useState(true)
+  const [publicView, setPublicView] = useState<"landing" | "login" | "register">("landing")
 
   useEffect(() => {
     let cancelled = false
@@ -94,7 +96,23 @@ function App() {
   }
 
   if (!user) {
-    return <Auth onAuthenticated={setUser} />
+    if (publicView === "landing") {
+      return (
+        <Landing
+          onGetStarted={() => setPublicView("register")}
+          onLogin={() => setPublicView("login")}
+        />
+      )
+    }
+
+    return (
+      <Auth
+        key={publicView}
+        initialMode={publicView}
+        onAuthenticated={setUser}
+        onBack={() => setPublicView("landing")}
+      />
+    )
   }
 
   return <Dashboard onLogout={handleLogout} />

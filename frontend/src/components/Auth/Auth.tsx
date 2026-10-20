@@ -3,10 +3,12 @@ import { login, register, saveAccessToken, type AuthUser} from "../../services/a
 
 interface AuthProps {
   onAuthenticated: (user: AuthUser) => void
+  initialMode?: "login" | "register"
+  onBack: () => void
 }
 
-function Auth({ onAuthenticated }: AuthProps) {
-  const [mode, setMode] = useState<"login" | "register">("login")
+function Auth({onAuthenticated, initialMode = "login", onBack}: AuthProps) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -54,6 +56,7 @@ function Auth({ onAuthenticated }: AuthProps) {
     <main className="auth-page">
       <section className="auth-card">
         <p className="eyebrow">ASAHI</p>
+        <button className="auth-back" type="button" onClick={onBack}>← Back to home </button>
 
         <h1>{mode === "login" ? "Welcome back." : "A fresh start."}</h1>
 
