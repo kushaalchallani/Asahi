@@ -1,0 +1,129 @@
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap");
+
+.dashboard-layout {
+  --ink: #2c3837;
+  --muted: #7a817a;
+  --orange: #ee8a4f;
+  --orange-dark: #e07a3e;
+  --sage: #8a9a8a;
+
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 235px minmax(0, 1fr);
+  color: var(--ink);
+  background: #f9f5ed;
+  font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.dashboard-layout button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.dashboard-layout :focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+/* ---------- Main layout ---------- */
+.dashboard-main {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 28px clamp(22px, 3vw, 48px) 40px;
+}
+
+.dashboard-secondary {
+  margin-top: 4px;
+}
+
+/* ---------- Shared buttons ---------- */
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 26px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.button-primary {
+  color: #fff;
+  background: var(--orange);
+  box-shadow: 0 6px 14px rgba(238, 138, 79, 0.28);
+}
+
+.button-primary:hover {
+  background: var(--orange-dark);
+  transform: translateY(-1px);
+}
+
+.button-secondary {
+  min-height: 38px;
+  padding: 0 22px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  border-color: #cfd4c6;
+}
+
+.button-secondary:hover {
+  background: #fff;
+}
+
+.button-text {
+  margin-top: 14px;
+  padding: 6px 0;
+  border: 0;
+  color: #6b736c;
+  background: transparent;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.button-text:hover {
+  color: var(--ink);
+}
+
+.panel-live {
+  margin-top: 18px;
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1000px) {
+  .dashboard-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .dashboard-main {
+    padding: 24px 20px 32px;
+  }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 700px) {
+  .dashboard-layout {
+    display: block;
+  }
+
+  .dashboard-main {
+    padding: 22px 16px 32px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .button-primary,
+  .button-secondary {
+    transition: none;
+  }
+}

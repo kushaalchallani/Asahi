@@ -1,0 +1,77 @@
+.mood-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin: 26px 0 28px;
+  max-width: 460px;
+}
+
+.mood {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: #4b5654;
+  background: transparent;
+}
+
+.mood-face {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px transparent;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.mood:hover .mood-face {
+  transform: translateY(-2px);
+}
+
+.mood.selected .mood-face {
+  box-shadow: 0 0 0 2px var(--orange);
+}
+
+.mood-label {
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.mood.selected .mood-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.panel-live {
+  margin-top: 18px;
+}
+
+.deco-leaves {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 170px;
+  pointer-events: none;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 700px) {
+  .mood-row {
+    gap: 4px;
+  }
+
+  .mood-face {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mood-face {
+    transition: none;
+  }
+}

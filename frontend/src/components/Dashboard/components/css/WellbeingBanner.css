@@ -1,0 +1,54 @@
+.wellbeing-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 150px;
+  margin-top: 24px;
+  padding: 28px 32px;
+  overflow: hidden;
+  border: 1px solid #e7e5d9;
+  border-radius: 18px;
+  background: #f1f0e6;
+}
+
+.wellbeing-symbol {
+  display: grid;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  color: #637b65;
+  background: #dfe7d8;
+}
+
+.wellbeing-text {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+}
+
+.wellbeing-banner h2 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.wellbeing-banner p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.banner-landscape {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  height: 100%;
+  pointer-events: none;
+}
