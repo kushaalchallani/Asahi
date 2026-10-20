@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from core.database import Base
+from core.security import create_access_token
 from dependencies.database import get_db
 from main import app
 from models.mission import Mission
@@ -56,6 +57,9 @@ def client():
             db.refresh(assignment)
 
             test_client.assignment_id = assignment.id
+            test_client.headers.update({
+                "Authorization": f"Bearer {create_access_token(user.id)}"
+            })
 
         yield test_client
 

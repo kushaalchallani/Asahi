@@ -1,8 +1,11 @@
 import os
-from datetime import datetime, timedelta, timezone
-
 import jwt
+from pathlib import Path
+from datetime import datetime, timedelta, timezone
+from dotenv import load_dotenv
 from pwdlib import PasswordHash
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 password_hash = PasswordHash.recommended()
 

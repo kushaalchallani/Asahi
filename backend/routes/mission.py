@@ -5,6 +5,8 @@ from dependencies.database import get_db
 from sqlalchemy import desc
 from mission.engine import choose_mission, build_feedback_history, explain_mission_score, format_mission_reasons, detect_mood, detect_repeated_low_mood
 from schemas.mission_feedback import MissionFeedbackRequest
+from dependencies.auth import get_current_user
+from models.user import User
 import models
 
 router = APIRouter(prefix='/missions', tags=['Missions'])
@@ -25,14 +27,15 @@ def get_mission_reasons(mission, current_check_in, recent_check_ins, recent_feed
     return format_mission_reasons(reason_codes)
 
 @router.get("/today")
-def get_today_mission(db: Session = Depends(get_db)):
+def get_today_mission(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     today = datetime.now().date()
-
+    user_id = current_user.id
     today_assignment = (
         db.query(models.UserMission)
         .filter(
+            models.UserMission.user_id == user_id,
             models.UserMission.assigned_at
-            >= datetime.combine(today, datetime.min.time())
+            >= datetime.combine(today, datetime.min.time()),
         )
         .order_by(models.UserMission.assigned_at.desc())
         .first()
@@ -47,6 +50,7 @@ def get_today_mission(db: Session = Depends(get_db)):
 
         current_check_in = (
             db.query(models.CheckIn)
+            .filter(models.CheckIn.user_id == user_id)
             .order_by(desc(models.CheckIn.created_at))
             .first()
         )
@@ -58,14 +62,20 @@ def get_today_mission(db: Session = Depends(get_db)):
 
             recent_check_ins = (
                 db.query(models.CheckIn)
-                .filter(models.CheckIn.created_at >= week_ago)
+                .filter(
+                    models.CheckIn.user_id == user_id,
+                    models.CheckIn.created_at >= week_ago,
+                )
                 .order_by(desc(models.CheckIn.created_at))
                 .all()
             )
 
             feedback_rows = (
                 db.query(models.UserMission)
-                .filter(models.UserMission.feedback.isnot(None))
+                .filter(
+                    models.UserMission.user_id == user_id,
+                    models.UserMission.feedback.isnot(None),
+                )
                 .order_by(desc(models.UserMission.assigned_at))
                 .limit(50)
                 .all()
@@ -90,6 +100,7 @@ def get_today_mission(db: Session = Depends(get_db)):
 
     current_check_in = (
         db.query(models.CheckIn)
+        .filter(models.CheckIn.user_id == user_id)
         .order_by(desc(models.CheckIn.created_at))
         .first()
     )
@@ -105,13 +116,17 @@ def get_today_mission(db: Session = Depends(get_db)):
 
     recent_check_ins = (
         db.query(models.CheckIn)
-        .filter(models.CheckIn.created_at >= week_ago)
+        .filter(
+            models.CheckIn.user_id == user_id,
+            models.CheckIn.created_at >= week_ago,
+        )
         .order_by(desc(models.CheckIn.created_at))
         .all()
     )
 
     recent_user_missions = (
         db.query(models.UserMission)
+        .filter(models.UserMission.user_id == user_id)
         .order_by(desc(models.UserMission.id))
         .limit(5)
         .all()
@@ -119,7 +134,10 @@ def get_today_mission(db: Session = Depends(get_db)):
 
     feedback_rows = (
         db.query(models.UserMission)
-        .filter(models.UserMission.feedback.isnot(None))
+        .filter(
+            models.UserMission.user_id == user_id,
+            models.UserMission.feedback.isnot(None),
+        )
         .order_by(desc(models.UserMission.assigned_at))
         .limit(50)
         .all()
@@ -147,7 +165,7 @@ def get_today_mission(db: Session = Depends(get_db)):
         recent_missions,
         missions,
         recent_feedback=recent_feedback,
-        recent_check_ins=recent_check_ins
+        recent_check_ins=recent_check_ins,
     )
 
     if not mission:
@@ -172,6 +190,7 @@ def get_today_mission(db: Session = Depends(get_db)):
     reasons = format_mission_reasons(reason_codes)
 
     user_mission = models.UserMission(
+        user_id=user_id,
         mission_id=mission.id,
         status="assigned",
     )
@@ -184,13 +203,20 @@ def get_today_mission(db: Session = Depends(get_db)):
         "mission": mission,
         "status": user_mission.status,
         "assignment_id": user_mission.id,
-        "reasons":reasons
+        "reasons": reasons,
     }
 
-
 @router.post('/assignments/{assignment_id}/start')
-def start_mission(assignment_id: int, db: Session=Depends(get_db)):
-    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id, models.UserMission.status == "assigned").first())
+def start_mission(assignment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_mission = (
+        db.query(models.UserMission)
+        .filter(
+            models.UserMission.id == assignment_id,
+            models.UserMission.user_id == current_user.id,
+            models.UserMission.status == "assigned",
+        )
+        .first()
+    )
 
     if not user_mission:
         raise HTTPException(
@@ -207,11 +233,12 @@ def start_mission(assignment_id: int, db: Session=Depends(get_db)):
     return user_mission
 
 @router.post("/assignments/{assignment_id}/complete")
-def complete_mission(assignment_id: int, db: Session = Depends(get_db)):
+def complete_mission(assignment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_mission = (
         db.query(models.UserMission)
         .filter(
             models.UserMission.id == assignment_id,
+            models.UserMission.user_id == current_user.id,
             models.UserMission.status == "started",
         )
         .first()
@@ -229,11 +256,12 @@ def complete_mission(assignment_id: int, db: Session = Depends(get_db)):
     return user_mission
 
 @router.post("/assignments/{assignment_id}/skip")
-def skip_mission(assignment_id: int, db: Session = Depends(get_db)):
+def skip_mission(assignment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_mission = (
         db.query(models.UserMission)
         .filter(
             models.UserMission.id == assignment_id,
+            models.UserMission.user_id == current_user.id,
             models.UserMission.status == "started",
         )
         .first()
@@ -254,8 +282,15 @@ def skip_mission(assignment_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/assignments/{assignment_id}/feedback")
-def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest, db: Session = Depends(get_db)):
-    user_mission = (db.query(models.UserMission).filter(models.UserMission.id == assignment_id).first())
+def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_mission = (
+        db.query(models.UserMission)
+        .filter(
+            models.UserMission.id == assignment_id,
+            models.UserMission.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not user_mission:
         raise HTTPException(
@@ -265,9 +300,9 @@ def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest,
 
     if user_mission.status not in ("completed", "skipped"):
         raise HTTPException(
-        status_code=409,
-        detail="Feedback can only be submitted after completing or skipping a mission.",
-    )
+            status_code=409,
+            detail="Feedback can only be submitted after completing or skipping a mission."
+        )
 
     if user_mission.feedback is not None:
         raise HTTPException(
@@ -282,5 +317,5 @@ def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest,
 
     return {
         "assignment_id": user_mission.id,
-        "feedback": user_mission.feedback
+        "feedback": user_mission.feedback,
     }
