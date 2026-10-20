@@ -97,3 +97,87 @@ def test_feedback_for_missing_assignment_returns_404(client):
     )
 
     assert response.status_code == 404
+
+def test_other_user_cannot_submit_feedback(client):
+    from models.user import User
+    from core.security import create_access_token
+
+    test_client = client
+    original_headers = test_client.headers.copy()
+
+    # create a second user in the test database
+    # the fixture database session is accessed through the app DB override
+    from dependencies.database import get_db
+    from main import app
+
+    db_dependency = app.dependency_overrides[get_db]
+    db = next(db_dependency())
+
+    try:
+        other_user = User(
+            email="another-user@example.com",
+            password_hash=None,
+            is_active=True,
+        )
+        db.add(other_user)
+        db.commit()
+        db.refresh(other_user)
+
+        test_client.headers.update({
+            "Authorization": f"Bearer {create_access_token(other_user.id)}"
+        })
+
+        response = test_client.post(
+            f"/missions/assignments/{test_client.assignment_id}/feedback",
+            json={"feedback": "helpful"},
+        )
+
+        assert response.status_code == 404
+    finally:
+        test_client.headers.clear()
+        test_client.headers.update(original_headers)
+        db.close()
+
+
+@pytest.mark.parametrize(
+    "action, expected_status",
+    [
+        ("start", 409),
+        ("complete", 404),
+        ("skip", 404),
+    ],
+)
+def test_other_user_cannot_change_assignment(client, action, expected_status):
+    from core.security import create_access_token
+    from dependencies.database import get_db
+    from main import app
+
+    original_headers = client.headers.copy()
+
+    db_generator = app.dependency_overrides[get_db]()
+    db = next(db_generator)
+
+    try:
+        other_user = User(
+            email="another-owner@example.com",
+            password_hash=None,
+            is_active=True,
+        )
+        db.add(other_user)
+        db.commit()
+        db.refresh(other_user)
+
+        client.headers.update({
+            "Authorization": f"Bearer {create_access_token(other_user.id)}"
+        })
+
+        response = client.post(
+            f"/missions/assignments/{client.assignment_id}/{action}",
+        )
+
+        assert response.status_code == expected_status
+    finally:
+        client.headers.clear()
+        client.headers.update(original_headers)
+        db.close()
+        db_generator.close()
