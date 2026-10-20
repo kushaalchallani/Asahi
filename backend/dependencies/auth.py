@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import jwt
-from backend.core.security import SECRET_KEY, ALGORITHM
+from core.security import SECRET_KEY, ALGORITHM
 from dependencies.database import get_db
 from models.user import User
 
