@@ -1,14 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.database import Base, engine
 from routes.check_ins import router as check_in_router
 from routes.mission import router as mission_router
-import models
+from routes.auth import router as auth_router
 
-Base.metadata.create_all(bind=engine)
 app = FastAPI()
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -19,6 +15,7 @@ app.add_middleware(
 
 app.include_router(check_in_router)
 app.include_router(mission_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
