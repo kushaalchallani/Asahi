@@ -1,6 +1,89 @@
 import type { CheckIn } from "../types/checkIn"
 
 const API_URL = "http://localhost:8000"
+const TOKEN_KEY = "asahi_access_token"
+
+export function getAccessToken(): string | null {
+  return sessionStorage.getItem(TOKEN_KEY)
+}
+
+export function saveAccessToken(token: string): void {
+  sessionStorage.setItem(TOKEN_KEY, token)
+}
+
+export function clearAccessToken(): void {
+  sessionStorage.removeItem(TOKEN_KEY)
+}
+
+async function apiRequest(path: string, options: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(options.headers)
+  const token = getAccessToken()
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  return fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  })
+}
+
+export interface AuthUser {
+  id: number
+  email: string
+  is_active: boolean
+}
+
+export interface AuthToken {
+  access_token: string
+  token_type: string
+  user: AuthUser
+}
+
+export async function register(
+  email: string,
+  password: string
+): Promise<AuthUser> {
+  const response = await apiRequest("/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Registration failed. Please check your details.")
+  }
+
+  return response.json()
+}
+
+export async function login(
+  email: string,
+  password: string
+): Promise<AuthToken> {
+  const response = await apiRequest("/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Login failed. Check your email and password.")
+  }
+
+  return response.json()
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  const response = await apiRequest("/auth/me")
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch current user")
+  }
+
+  return response.json()
+}
 
 export type MissionFeedback = "helpful" | "not_for_me" | "not_sure"
 
@@ -32,7 +115,7 @@ export async function createCheckIn(
   feeling: string,
   note?: string
 ): Promise<CheckIn> {
-  const response = await fetch(`${API_URL}/check-ins`, {
+  const response = await apiRequest("/check-ins", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -51,7 +134,7 @@ export async function createCheckIn(
 }
 
 export async function getCheckIn(): Promise<CheckIn[]> {
-  const response = await fetch(`${API_URL}/check-ins`)
+  const response = await apiRequest("/check-ins")
 
   if (!response.ok) {
     throw new Error("Failed to fetch check-ins")
@@ -61,7 +144,7 @@ export async function getCheckIn(): Promise<CheckIn[]> {
 }
 
 export async function getCheckInInsights(): Promise<CheckInInsights> {
-  const response = await fetch(`${API_URL}/check-ins/insights`)
+  const response = await apiRequest("/check-ins/insights")
 
   if (!response.ok) {
     throw new Error("Failed to fetch check-in insights")
@@ -71,7 +154,7 @@ export async function getCheckInInsights(): Promise<CheckInInsights> {
 }
 
 export async function getTodayMission(): Promise<TodayMission> {
-  const response = await fetch(`${API_URL}/missions/today`)
+  const response = await apiRequest("/missions/today")
 
   if (!response.ok) {
     throw new Error("Failed to fetch today's mission")
@@ -81,7 +164,7 @@ export async function getTodayMission(): Promise<TodayMission> {
 }
 
 export async function startMission(assignmentId: number) {
-  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/start`, {
+  const response = await apiRequest(`/missions/assignments/${assignmentId}/start`, {
     method: "POST",
   })
 
@@ -93,7 +176,7 @@ export async function startMission(assignmentId: number) {
 }
 
 export async function completeMission(assignmentId: number) {
-  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/complete`, {
+  const response = await apiRequest(`/missions/assignments/${assignmentId}/complete`, {
     method: "POST",
   })
 
@@ -105,7 +188,7 @@ export async function completeMission(assignmentId: number) {
 }
 
 export async function skipMission(assignmentId: number) {
-  const response = await fetch(`${API_URL}/missions/assignments/${assignmentId}/skip`, {
+  const response = await apiRequest(`/missions/assignments/${assignmentId}/skip`, {
     method: "POST",
   })
 
@@ -120,9 +203,7 @@ export async function submitMissionFeedback(
   assignmentId: number,
   feedback: MissionFeedback
 ) {
-  const response = await fetch(
-    `${API_URL}/missions/assignments/${assignmentId}/feedback`,
-    {
+  const response = await  apiRequest(`/missions/assignments/${assignmentId}/feedback`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

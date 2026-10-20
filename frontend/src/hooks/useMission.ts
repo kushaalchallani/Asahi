@@ -50,7 +50,7 @@ export function useMission() {
     } catch (error) {
       console.error("Failed to start mission:", error)
     }
-  }, [mission])
+  }, [assignmentId])
 
   const complete = useCallback(async () => {
     if (!assignmentId) return
@@ -61,7 +61,7 @@ export function useMission() {
     } catch (error) {
       console.error("Failed to complete mission:", error)
     }
-  }, [mission])
+  }, [assignmentId])
 
   const skip = useCallback(async () => {
     if (!assignmentId) return
@@ -72,7 +72,7 @@ export function useMission() {
     } catch (error) {
       console.error("Failed to skip mission:", error)
     }
-  }, [mission])
+  }, [assignmentId])
 
   const submitFeedback = useCallback( async (feedback: MissionFeedback) => {
     if (!assignmentId || feedbackLoading || feedbackSubmitted) return
