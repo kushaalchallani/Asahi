@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyClassifier
 from sklearn.pipeline import Pipeline
-from backend.ml.evaluate import evaluate_model, create_train_test_split
-from backend.ml.preprocessing import build_preprocessor
-from backend.ml.dataset import build_dataset
-from backend.ml.experiment import make_synthetic_records 
+from ml.evaluate import evaluate_model, create_train_test_split
+from ml.preprocessing import build_preprocessor
+from ml.dataset import build_dataset
+from ml.experiment import make_synthetic_records 
 
 def test_evaluate_mode_prints_metrics_and_confusion_matrix(capsys):
     x_train = pd.DataFrame({

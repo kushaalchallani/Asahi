@@ -1,7 +1,7 @@
 
 import pandas as pd
 
-from backend.ml.train import load_model
+from ml.train import load_model
 
 
 def main() -> None:

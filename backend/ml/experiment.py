@@ -1,4 +1,3 @@
-from backend.ml.train import train_model
 from itertools import product
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LogisticRegression
@@ -6,8 +5,8 @@ from sklearn.metrics import make_scorer, precision_score, recall_score, balanced
 from sklearn.model_selection import StratifiedKFold, cross_validate, cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from backend.ml.dataset import build_dataset, TARGET_COLUMN
-from backend.ml.preprocessing import build_preprocessor
+from ml.dataset import build_dataset, TARGET_COLUMN
+from ml.preprocessing import build_preprocessor
 
 def make_synthetic_records() -> list[dict]:
     records = []

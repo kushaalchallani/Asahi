@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from backend.ml.train import train_model
+from ml.train import train_model
 
 def make_records():
     records = []

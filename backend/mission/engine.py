@@ -17,12 +17,27 @@ def build_feedback_history(feedback_rows):
     feedback_by_mission = {}
 
     for user_mission in feedback_rows:
-        if user_mission.mission_id not in feedback_by_mission:
-            feedback_by_mission[user_mission.mission_id] = (
-                user_mission.feedback
-            )
+        feedback_by_mission.setdefault(
+            user_mission.mission_id, []
+        ).append(user_mission.feedback)
 
     return feedback_by_mission
+
+def score_feedback(feedback_history):
+    if not feedback_history:
+        return 0
+
+    score = 0
+
+    for index, feedback in enumerate(feedback_history[:5]):
+        weight = max(1, 3 - index)
+
+        if feedback == "helpful":
+            score += weight
+        elif feedback == "not_for_me":
+            score -= weight
+
+    return max(-6, min(score, 6))
 
 LOW_MOOD_WORDS = [
     "low",
@@ -143,12 +158,9 @@ def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_moo
         if repeated_low_mood and mission.energy_required == "low":
             score += 2
 
-        feedback = feedback_by_mission.get(mission.id)
-
-        if feedback == "not_for_me":
-            score -= 3
-        elif feedback == "helpful":
-            score += 2
+        score += score_feedback(
+            feedback_by_mission.get(mission.id, [])
+        )
 
         return score
 
@@ -173,13 +185,15 @@ def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated
     if repeated_low_mood and mission.energy_required == "low":
         reasons.append("low_energy_for_repeated_low_mood")
 
-    feedback = feedback_by_mission.get(mission.id)
+    feedback_history = feedback_by_mission.get(mission.id, [])
 
-    if feedback == "helpful":
-        reasons.append("previously_helpful")
+    if feedback_history:
+        latest_feedback = feedback_history[0]
 
-    if feedback == "not_for_me":
-        reasons.append("previously_not_for_me")
+        if latest_feedback == "helpful":
+            reasons.append("previously_helpful")
+        elif latest_feedback == "not_for_me":
+            reasons.append("previously_not_for_me")
 
     return reasons
 
@@ -294,10 +308,13 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     feedback_by_mission = recent_feedback or {}
 
     disliked_candidates = [
-    mission
-    for mission in candidates
-    if feedback_by_mission.get(mission.id) == "not_for_me"
-]
+        mission
+        for mission in candidates
+        if (
+            feedback_by_mission.get(mission.id)
+            and feedback_by_mission[mission.id][0] == "not_for_me"
+        )
+    ]
 
     if disliked_candidates and len(disliked_candidates) == len(candidates):
         # Keep a fallback if every available candidate was disliked.
@@ -306,7 +323,10 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
         candidates = [
             mission
             for mission in candidates
-            if feedback_by_mission.get(mission.id) != "not_for_me"
+            if not (
+                feedback_by_mission.get(mission.id)
+                and feedback_by_mission[mission.id][0] == "not_for_me"
+            )
         ]
 
     repeated_low_mood = detect_repeated_low_mood(recent_check_ins)

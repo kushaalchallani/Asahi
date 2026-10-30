@@ -1,5 +1,6 @@
 from types import SimpleNamespace
-from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons, score_mission
+from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons, score_mission, build_feedback_history, score_feedback
+import mission.engine as engine
 
 
 def make_mission(
@@ -106,14 +107,12 @@ def test_not_for_me_feedback_penalizes_mission():
         check_in,
         [],
         [mission_1, mission_2],
-        recent_feedback={1: "not_for_me"},
+        recent_feedback={1: ["not_for_me"]},
     )
 
     assert result.id == 2
 
 def test_repeated_low_mood_prefers_low_energy_mission():
-    from types import SimpleNamespace
-
     current_check_in = SimpleNamespace(
         feeling="I'm doing okay",
         note="",
@@ -149,8 +148,6 @@ def test_repeated_low_mood_prefers_low_energy_mission():
     assert result.id == 1
 
 def test_repeated_low_mood_in_notes_prefers_low_energy_mission():
-    from types import SimpleNamespace
-
     current_check_in = SimpleNamespace(
         feeling="I'm doing okay",
         note="",
@@ -194,9 +191,6 @@ def test_repeated_low_mood_in_notes_prefers_low_energy_mission():
     assert result.id == 1
 
 def test_feedback_history_keeps_latest_feedback_for_each_mission():
-    from types import SimpleNamespace
-    from mission.engine import build_feedback_history
-
     feedback_rows = [
         SimpleNamespace(mission_id=1, feedback="not_for_me"),
         SimpleNamespace(mission_id=2, feedback="helpful"),
@@ -206,8 +200,8 @@ def test_feedback_history_keeps_latest_feedback_for_each_mission():
     result = build_feedback_history(feedback_rows)
 
     assert result == {
-        1: "not_for_me",
-        2: "helpful",
+        1: ["not_for_me", "helpful"],
+        2: ["helpful"],
     }
 
 def test_helpful_feedback_favours_mission():
@@ -220,7 +214,7 @@ def test_helpful_feedback_favours_mission():
         check_in,
         [],
         [mission_1, mission_2],
-        recent_feedback={1: "helpful"},
+        recent_feedback={1: ["helpful"]},
     )
 
     assert result.id == 1
@@ -237,8 +231,8 @@ def test_not_for_me_feedback_loses_to_helpful_feedback():
         [],
         [disliked_mission, helpful_mission],
         recent_feedback={
-            1: "not_for_me",
-            2: "helpful",
+            1: ["not_for_me"],
+            2: ["helpful"],
         },
     )
 
@@ -251,13 +245,13 @@ def test_falls_back_when_low_mood_filter_has_no_matches():
         1,
         category="reflection",
         energy_required="medium",
-        social_required=False
+        social_required=False,
     )
 
     result = choose_mission(
         check_in,
         [],
-        [only_available_mission]
+        [only_available_mission],
     )
 
     assert result.id == 1
@@ -290,7 +284,7 @@ def test_low_mood_and_feedback_choose_suitable_alternative():
             disliked_mission,
             suitable_alternative,
         ],
-        recent_feedback={2: "not_for_me"},
+        recent_feedback={2: ["not_for_me"]},
     )
 
     assert result.id == 3
@@ -317,7 +311,7 @@ def test_empty_missions_returns_none_with_other_context():
         check_in,
         [],
         [],
-        recent_feedback={1: "not_for_me"},
+        recent_feedback={1: ["not_for_me"]},
         recent_check_ins=[
             make_check_in("Tired"),
             make_check_in("Sad"),
@@ -371,8 +365,6 @@ def test_build_recommendation_result_contains_mission_score_and_reasons():
 
 
 def test_ml_ranking_can_change_selected_mission(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in("I'm doing okay")
 
     mission_one = make_mission(
@@ -403,7 +395,7 @@ def test_ml_ranking_can_change_selected_mission(monkeypatch):
         2: 0.9,
     }
 
-    def fake_predict(model, mission, energy_preference, recently_seen=False,):
+    def fake_predict(model, mission, energy_preference, recently_seen=False):
         return scores[mission.id]
 
     monkeypatch.setattr(
@@ -422,8 +414,6 @@ def test_ml_ranking_can_change_selected_mission(monkeypatch):
 
 
 def test_rule_based_ranking_works_when_ml_model_unavailable(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in("I'm doing okay")
 
     mission_one = make_mission(
@@ -485,8 +475,6 @@ def test_handles_missing_note():
 
 
 def test_ml_ranking_receives_inferred_energy_preference(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in(
         "I'm doing okay",
         "I'm exhausted and have very little energy today",
@@ -501,7 +489,12 @@ def test_ml_ranking_receives_inferred_energy_preference(monkeypatch):
         lambda: object(),
     )
 
-    def fake_predict(model, selected_mission, energy_preference, recently_seen=False):
+    def fake_predict(
+        model,
+        selected_mission,
+        energy_preference,
+        recently_seen=False,
+    ):
         received["energy_preference"] = energy_preference
         return 0.5
 
@@ -516,8 +509,6 @@ def test_ml_ranking_receives_inferred_energy_preference(monkeypatch):
     assert received["energy_preference"] == "low"
 
 def test_ml_does_not_override_not_for_me_feedback(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in("I'm doing okay")
 
     disliked_mission = make_mission(1)
@@ -539,15 +530,13 @@ def test_ml_does_not_override_not_for_me_feedback(monkeypatch):
         check_in,
         [],
         [disliked_mission, alternative_mission],
-        recent_feedback={1: "not_for_me"},
+        recent_feedback={1: ["not_for_me"]},
     )
 
     assert result.id == 2
 
 
 def test_ml_does_not_override_low_energy_suitability(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in("A little low")
 
     high_energy_mission = make_mission(
@@ -598,8 +587,6 @@ def test_format_mission_reasons():
     assert len(messages) == 2
 
 def test_rule_based_ranking_works_when_model_fails(monkeypatch):
-    import mission.engine as engine
-
     check_in = make_check_in("I'm doing okay")
 
     mission_one = make_mission(
@@ -651,5 +638,46 @@ def test_loneliness_bonus_applies_to_low_energy_non_social_connection_mission():
         feedback_by_mission={},
     )
 
-    # Low energy (+2) + non-social (+1) + loneliness connection bonus (+3)
     assert score == 6
+
+def test_build_feedback_history_uses_latest_feedback():
+    feedback_rows = [
+        SimpleNamespace(mission_id=1, feedback="not_for_me"),
+        SimpleNamespace(mission_id=1, feedback="helpful"),
+        SimpleNamespace(mission_id=2, feedback="helpful"),
+    ]
+
+    result = build_feedback_history(feedback_rows)
+
+    assert result == {
+        1: ["not_for_me", "helpful"],
+        2: ["helpful"],
+    }
+
+
+def test_score_feedback_returns_zero_for_empty_history():
+    assert score_feedback([]) == 0
+
+
+def test_score_feedback_rewards_helpful_feedback():
+    assert score_feedback(["helpful"]) == 3
+
+
+def test_score_feedback_penalizes_not_for_me_feedback():
+    assert score_feedback(["not_for_me"]) == -3
+
+
+def test_score_feedback_gives_more_weight_to_latest_feedback():
+    assert score_feedback(["not_for_me", "helpful"]) == -1
+
+
+def test_score_feedback_caps_positive_score():
+    assert score_feedback(
+        ["helpful", "helpful", "helpful", "helpful", "helpful"]
+    ) == 6
+
+
+def test_score_feedback_caps_negative_score():
+    assert score_feedback(
+        ["not_for_me", "not_for_me", "not_for_me", "not_for_me", "not_for_me"]
+    ) == -6

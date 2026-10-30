@@ -1,6 +1,6 @@
 import pandas as pd
-from backend.ml.dataset import build_dataset
-from backend.ml.preprocessing import build_preprocessor
+from ml.dataset import build_dataset
+from ml.preprocessing import build_preprocessor
 
 def test_preprocessor_produces_numeric_features():
     records = [

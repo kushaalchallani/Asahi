@@ -1,5 +1,5 @@
 import pytest
-from backend.ml.dataset import build_dataset
+from ml.dataset import build_dataset
 
 def test_build_dataset_returns_valid_dataframe():
     records = [

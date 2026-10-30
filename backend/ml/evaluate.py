@@ -4,9 +4,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, classification_report, confusion_matrix, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from backend.ml.dataset import build_dataset, TARGET_COLUMN
-from backend.ml.experiment import make_synthetic_records
-from backend.ml.preprocessing import build_preprocessor
+from ml.dataset import build_dataset, TARGET_COLUMN
+from ml.experiment import make_synthetic_records
+from ml.preprocessing import build_preprocessor
 
 def create_train_test_split(dataset, test_size=0.25, random_state=42):
     x = dataset.drop(columns=[TARGET_COLUMN])
