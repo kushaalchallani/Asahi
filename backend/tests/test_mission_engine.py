@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons
+from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons, score_mission
 
 
 def make_mission(
@@ -633,3 +633,23 @@ def test_rule_based_ranking_works_when_model_fails(monkeypatch):
 
     assert result is not None
     assert result.id == 2
+
+def test_loneliness_bonus_applies_to_low_energy_non_social_connection_mission():
+    mission = SimpleNamespace(
+        id=10,
+        category="connection",
+        energy_required="low",
+        social_required=False,
+    )
+
+    score = score_mission(
+        mission,
+        is_low_mood=False,
+        is_stressed=False,
+        is_lonely=True,
+        repeated_low_mood=False,
+        feedback_by_mission={},
+    )
+
+    # Low energy (+2) + non-social (+1) + loneliness connection bonus (+3)
+    assert score == 6

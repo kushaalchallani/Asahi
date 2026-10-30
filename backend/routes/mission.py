@@ -76,7 +76,10 @@ def get_today_mission(db: Session = Depends(get_db), current_user: User = Depend
                     models.UserMission.user_id == user_id,
                     models.UserMission.feedback.isnot(None),
                 )
-                .order_by(desc(models.UserMission.assigned_at))
+                .order_by(
+                    desc(models.UserMission.feedback_at).nullslast(),
+                    desc(models.UserMission.assigned_at),
+                )
                 .limit(50)
                 .all()
             )
@@ -138,7 +141,10 @@ def get_today_mission(db: Session = Depends(get_db), current_user: User = Depend
             models.UserMission.user_id == user_id,
             models.UserMission.feedback.isnot(None),
         )
-        .order_by(desc(models.UserMission.assigned_at))
+        .order_by(
+            desc(models.UserMission.feedback_at).nullslast(),
+            desc(models.UserMission.assigned_at),
+        )
         .limit(50)
         .all()
     )
@@ -311,6 +317,7 @@ def submit_mission_feedback(assignment_id: int, payload: MissionFeedbackRequest,
         )
 
     user_mission.feedback = payload.feedback
+    user_mission.feedback_at = datetime.now()
 
     db.commit()
     db.refresh(user_mission)
