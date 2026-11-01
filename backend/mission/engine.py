@@ -161,7 +161,23 @@ def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
 
     return candidates
 
-def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission):
+def score_difficulty_preference(mission, difficulty_preference):
+    preferred_difficulty = {
+        "easy": "low",
+        "moderate": "medium",
+        "challenging": "high",
+    }.get(difficulty_preference)
+
+    if not preferred_difficulty:
+        return 0
+
+    return (
+        3
+        if getattr(mission, "difficulty", None) == preferred_difficulty
+        else 0
+    )
+
+def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission, difficulty_preference="moderate"):
         score = 0
 
         if mission.energy_required == "low":
@@ -184,6 +200,11 @@ def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_moo
 
         score += score_feedback(
             feedback_by_mission.get(mission.id, [])
+        )
+
+        score += score_difficulty_preference(
+            mission,
+            difficulty_preference,
         )
 
         return score
@@ -287,7 +308,7 @@ def predict_mission_match(model, mission, energy_preference, recently_seen=False
 
     return float(model.predict_proba(features)[0][1])
 
-def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None,):
+def choose_mission(current_check_in, recent_missions, missions, recent_feedback=None, recent_check_ins=None, difficulty_preference="moderate"):
     if not missions:
         return None
 
@@ -373,6 +394,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
             is_lonely,
             repeated_low_mood,
             feedback_by_mission,
+            difficulty_preference=difficulty_preference
         )
 
         if model is None:

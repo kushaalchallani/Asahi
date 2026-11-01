@@ -172,6 +172,7 @@ def get_today_mission(db: Session = Depends(get_db), current_user: User = Depend
         missions,
         recent_feedback=recent_feedback,
         recent_check_ins=recent_check_ins,
+        difficulty_preference=current_user.difficulty_preference,
     )
 
     if not mission:

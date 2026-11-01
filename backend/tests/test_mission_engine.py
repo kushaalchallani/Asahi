@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 from mission.engine import choose_mission, explain_mission_score, build_recommendation_result, infer_energy_preference, format_mission_reasons, score_mission, build_feedback_history, score_feedback
 import mission.engine as engine
-
+import pytest
 
 def make_mission(
     mission_id,
@@ -788,3 +788,28 @@ def test_missing_check_in_text_does_not_crash():
         "is_stressed": False,
         "is_lonely": False,
     }
+
+@pytest.mark.parametrize(
+    ("preference", "mission_difficulty", "expected"),
+    [
+        ("easy", "low", 3),
+        ("easy", "medium", 0),
+        ("moderate", "medium", 3),
+        ("moderate", "high", 0),
+        ("challenging", "high", 3),
+        ("challenging", "low", 0),
+        ("unknown", "medium", 0),
+    ],
+)
+def test_score_difficulty_preference(
+    preference,
+    mission_difficulty,
+    expected,
+):
+    mission = make_mission(mission_id=1)
+    mission.difficulty = mission_difficulty
+
+    assert engine.score_difficulty_preference(
+        mission,
+        preference,
+    ) == expected
