@@ -681,3 +681,53 @@ def test_score_feedback_caps_negative_score():
     assert score_feedback(
         ["not_for_me", "not_for_me", "not_for_me", "not_for_me", "not_for_me"]
     ) == -6
+
+def test_low_mood_and_stress_apply_both_filters():
+    missions = [
+        make_mission(1, category="regulation"),
+        make_mission(2, category="connection"),
+        make_mission(3, category="regulation", energy_required="medium"),
+        make_mission(4, category="reflection", social_required=True),
+    ]
+
+    result = engine.filter_suitable_missions(
+        missions,
+        is_low_mood=True,
+        is_stressed=True,
+        is_lonely=False,
+    )
+
+    assert [mission.id for mission in result] == [1]
+
+
+def test_loneliness_and_stress_apply_both_filters():
+    missions = [
+        make_mission(1, category="environment"),
+        make_mission(2, category="connection"),
+        make_mission(3, category="reflection", energy_required="high"),
+    ]
+
+    result = engine.filter_suitable_missions(
+        missions,
+        is_low_mood=False,
+        is_stressed=True,
+        is_lonely=True,
+    )
+
+    assert [mission.id for mission in result] == [1]
+
+
+def test_no_mood_signals_returns_all_missions():
+    missions = [
+        make_mission(1),
+        make_mission(2, category="connection", energy_required="high"),
+    ]
+
+    result = engine.filter_suitable_missions(
+        missions,
+        is_low_mood=False,
+        is_stressed=False,
+        is_lonely=False,
+    )
+
+    assert result == missions

@@ -115,25 +115,22 @@ def detect_repeated_low_mood(recent_check_ins):
 
 
 def filter_suitable_missions(missions, is_low_mood, is_stressed, is_lonely):
-    if is_low_mood:
+    candidates = missions.copy()
+
+    if is_low_mood or is_lonely:
         candidates = [
-            mission for mission in missions
+            mission
+            for mission in candidates
             if mission.energy_required == "low"
             and not mission.social_required
         ]
-    elif is_stressed:
+
+    if is_stressed:
         candidates = [
-            mission for mission in missions
+            mission
+            for mission in candidates
             if mission.category in ("regulation", "environment", "reflection")
         ]
-    elif is_lonely:
-        candidates = [
-            mission for mission in missions
-            if mission.energy_required == "low"
-            and not mission.social_required
-        ]
-    else: 
-        candidates = missions.copy()
 
     return candidates
 
