@@ -50,6 +50,43 @@ LOW_MOOD_WORDS = [
 
 STRESS_WORDS = ["stress", "stressed", "anxious"]
 
+def contains_mood_signal(text, words):
+    negations = (
+        "not",
+        "no",
+        "never",
+        "don't",
+        "do not",
+        "doesn't",
+        "does not",
+        "isn't",
+        "is not",
+        "aren't",
+        "are not",
+        "no longer",
+    )
+
+    for word in words:
+        start = 0
+
+        while True:
+            index = text.find(word, start)
+
+            if index == -1:
+                break
+
+            preceding_text = text[max(0, index - 30):index]
+
+            if not any(
+                negation in preceding_text
+                for negation in negations
+            ):
+                return True
+
+            start = index + len(word)
+
+    return False
+
 
 def detect_mood(check_in):
     feeling = (getattr(check_in, "feeling", None) or "").lower()
@@ -57,9 +94,9 @@ def detect_mood(check_in):
     text = f"{feeling} {note}"
 
     return {
-        "is_low_mood": any(word in text for word in LOW_MOOD_WORDS),
-        "is_stressed": any(word in text for word in STRESS_WORDS),
-        "is_lonely": "lonely" in text,
+        "is_low_mood": contains_mood_signal(text, LOW_MOOD_WORDS),
+        "is_stressed": contains_mood_signal(text, STRESS_WORDS),
+        "is_lonely": contains_mood_signal(text, ["lonely"]),
     }
 
 def infer_energy_preference(check_in):

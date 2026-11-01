@@ -748,3 +748,10 @@ def test_positive_feedback_history_is_not_overridden_by_latest_negative_feedback
     )
 
     assert result.id == 1
+
+def test_negated_mood_words_do_not_trigger_low_mood():
+    check_in = make_check_in("I'm doing okay", "I'm not sad or overwhelmed.")
+
+    result = engine.detect_mood(check_in)
+
+    assert result["is_low_mood"] is False
