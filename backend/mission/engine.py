@@ -307,15 +307,17 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
     disliked_candidates = [
         mission
         for mission in candidates
-        if (
-            feedback_by_mission.get(mission.id)
-            and feedback_by_mission[mission.id][0] == "not_for_me"
-        )
+        if score_feedback(
+            feedback_by_mission.get(mission.id, [])
+        ) < 0
     ]
 
-    if disliked_candidates and len(disliked_candidates) == len(candidates):
-        # Keep a fallback if every available candidate was disliked.
-        pass
+    if len(disliked_candidates) < len(candidates):
+        candidates = [
+            mission
+            for mission in candidates
+            if mission not in disliked_candidates
+        ]
     else:
         candidates = [
             mission

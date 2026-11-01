@@ -731,3 +731,20 @@ def test_no_mood_signals_returns_all_missions():
     )
 
     assert result == missions
+
+def test_positive_feedback_history_is_not_overridden_by_latest_negative_feedback():
+    check_in = make_check_in("I'm doing okay")
+
+    mission_1 = make_mission(1)
+    mission_2 = make_mission(2)
+
+    result = engine.choose_mission(
+        check_in,
+        [],
+        [mission_1, mission_2],
+        recent_feedback={
+            1: ["not_for_me", "helpful", "helpful", "helpful"],
+        },
+    )
+
+    assert result.id == 1
