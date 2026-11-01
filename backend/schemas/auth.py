@@ -17,7 +17,7 @@ class UserPublic(BaseModel):
     id: int
     email: str
     is_active: bool
-
+    difficulty_preference: str
 
 class TokenResponse(BaseModel):
     access_token: str

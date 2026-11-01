@@ -20,6 +20,9 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, nullable=False
     )
+    difficulty_preference: Mapped[str] = mapped_column(
+        String(20), default="moderate", nullable=False
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )

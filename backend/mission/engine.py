@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 from pathlib import Path
 from ml.train import load_model
 
@@ -51,39 +52,28 @@ LOW_MOOD_WORDS = [
 STRESS_WORDS = ["stress", "stressed", "anxious"]
 
 def contains_mood_signal(text, words):
-    negations = (
-        "not",
-        "no",
-        "never",
-        "don't",
-        "do not",
-        "doesn't",
-        "does not",
-        "isn't",
-        "is not",
-        "aren't",
-        "are not",
-        "no longer",
-    )
+    negations = {
+        "not", "no", "never", "don't", "do not",
+        "doesn't", "does not", "isn't", "is not",
+        "aren't", "are not", "no longer",
+    }
 
     for word in words:
-        start = 0
+        pattern = rf"\b{re.escape(word)}\b"
 
-        while True:
-            index = text.find(word, start)
+        for match in re.finditer(pattern, text):
+            preceding_text = text[max(0, match.start() - 20):match.start()]
 
-            if index == -1:
-                break
+            # Only consider negation in the same short phrase.
+            preceding_text = re.split(
+                r"[,.;!?]|\bbut\b|\bhowever\b",
+                preceding_text,
+            )[-1]
 
-            preceding_text = text[max(0, index - 30):index]
+            preceding_words = set(preceding_text.split())
 
-            if not any(
-                negation in preceding_text
-                for negation in negations
-            ):
+            if not preceding_words.intersection(negations):
                 return True
-
-            start = index + len(word)
 
     return False
 

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.check_ins import router as check_in_router
 from routes.mission import router as mission_router
 from routes.auth import router as auth_router
+from routes.preferences import router as preferences_router
 
 app = FastAPI()
 app.add_middleware(
@@ -16,6 +17,7 @@ app.add_middleware(
 app.include_router(check_in_router)
 app.include_router(mission_router)
 app.include_router(auth_router)
+app.include_router(preferences_router)
 
 
 @app.get("/")

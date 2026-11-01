@@ -755,3 +755,36 @@ def test_negated_mood_words_do_not_trigger_low_mood():
     result = engine.detect_mood(check_in)
 
     assert result["is_low_mood"] is False
+
+def test_positive_mood_signals_are_still_detected():
+    check_in = make_check_in(
+        "I'm doing okay",
+        "I've been feeling sad and overwhelmed.",
+    )
+
+    result = engine.detect_mood(check_in)
+
+    assert result["is_low_mood"] is True
+
+
+def test_negation_does_not_hide_a_later_positive_signal():
+    check_in = make_check_in(
+        "I'm not sad",
+        "But I feel overwhelmed.",
+    )
+
+    result = engine.detect_mood(check_in)
+
+    assert result["is_low_mood"] is True
+
+
+def test_missing_check_in_text_does_not_crash():
+    check_in = make_check_in(None, None)
+
+    result = engine.detect_mood(check_in)
+
+    assert result == {
+        "is_low_mood": False,
+        "is_stressed": False,
+        "is_lonely": False,
+    }
