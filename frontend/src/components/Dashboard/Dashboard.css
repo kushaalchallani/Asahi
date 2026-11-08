@@ -121,9 +121,59 @@
 }
 
 /* ---------- Reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .button-primary,
-  .button-secondary {
-    transition: none;
-  }
+/* ---------- Logout Modal ---------- */
+.logout-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 56, 55, 0.4);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
 }
+
+.logout-modal-card {
+  background: #fff;
+  border: 1px solid #e4e8dc;
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90vw;
+  box-shadow: 0 10px 30px rgba(44, 56, 55, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.logout-modal-card h3 {
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+.logout-modal-card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.logout-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.logout-confirm-btn {
+  background: #d96b32;
+}
+
+.logout-confirm-btn:hover {
+  background: #c05825;
+}
+
