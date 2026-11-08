@@ -6,7 +6,13 @@ import {
   type DifficultyPreference,
 } from "../services/api"
 
-export function useDifficultyPreference() {
+export function useDifficultyPreference(
+  options?: {
+    onPreferenceChange?: () => void
+  }
+) {
+  const { onPreferenceChange } = options || {}
+
   const [preference, setPreference] =
     useState<DifficultyPreference | null>(null)
 
@@ -51,6 +57,11 @@ export function useDifficultyPreference() {
     try {
       const data = await updateDifficultyPreference(value)
       setPreference(data.difficulty_preference)
+
+      // Trigger refresh callback if provided
+      if (onPreferenceChange) {
+        onPreferenceChange()
+      }
     } catch {
       setError("Couldn't update your preference. Please try again.")
     } finally {

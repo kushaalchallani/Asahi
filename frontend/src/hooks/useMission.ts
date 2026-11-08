@@ -13,33 +13,36 @@ export function useMission() {
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
   const [reasons, setReasons] = useState<string[]>([])
+  const [message, setMessage] = useState<string | undefined>(undefined)
+
+  const loadMission = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getTodayMission()
+      setMission(data.mission)
+      setReasons(data.reasons ?? [])
+      setAssignmentId(data.assignment_id ?? null)
+      setFeedbackSubmitted(data.feedback != null)
+      setMessage(data.message)
+
+      if (
+        data.status === "assigned" ||
+        data.status === "started" ||
+        data.status === "completed" ||
+        data.status === "skipped"
+      ) {
+        setStatus(data.status)
+      }
+    } catch (error) {
+      console.error("Failed to load today's mission:", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    async function loadMission() {
-      try {
-        const data = await getTodayMission()
-        setMission(data.mission)
-        setReasons(data.reasons ?? [])
-        setAssignmentId(data.assignment_id ?? null)
-        setFeedbackSubmitted(data.feedback != null)
-
-        if (
-          data.status === "assigned" ||
-          data.status === "started" ||
-          data.status === "completed" ||
-          data.status === "skipped"
-        ) {
-          setStatus(data.status)
-        }
-      } catch (error) {
-        console.error("Failed to load today's mission:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     void loadMission()
-  }, [])
+  }, [loadMission])
 
   const start = useCallback(async () => {
     if (!assignmentId) return
@@ -91,5 +94,5 @@ export function useMission() {
   [assignmentId, feedbackLoading, feedbackSubmitted]
 )
 
-  return { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted, reasons}
+  return { mission, status, loading, start, complete, skip, submitFeedback, feedbackLoading, feedbackSubmitted, reasons, message, refresh: loadMission}
 }

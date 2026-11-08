@@ -8,6 +8,7 @@ interface MissionProps {
   feedbackLoading: boolean
   feedbackSubmitted: boolean
   reasons: string[]
+  message?: string
   onFeedback: (feedback: "helpful" | "not_for_me" | "not_sure") => void
   onStart: () => void
   onComplete: () => void
@@ -40,6 +41,7 @@ function Missions({
   feedbackLoading,
   feedbackSubmitted,
   reasons,
+  message,
   onFeedback,
   onStart,
   onComplete,
@@ -63,8 +65,8 @@ function Missions({
         <span className="mission-state-icon">
           <LeafIcon />
         </span>
-        <h3>Your next small step starts here</h3>
-        <p>Complete a check-in to get a mission suited to how you’re feeling today.</p>
+        <h3>{message ? "Ready when you are" : "Your next small step starts here"}</h3>
+        <p>{message || "Complete a check-in to get a mission suited to how you’re feeling today."}</p>
       </div>
     )
   }

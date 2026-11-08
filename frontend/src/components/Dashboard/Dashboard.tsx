@@ -32,12 +32,14 @@ export default function Dashboard({
     status,
     loading,
     reasons,
+    message,
     start,
     complete,
     skip,
     submitFeedback,
     feedbackLoading,
     feedbackSubmitted,
+    refresh: refreshMission,
   } = useMission()
   const {
     preference,
@@ -45,7 +47,9 @@ export default function Dashboard({
     saving: preferenceSaving,
     error: preferenceError,
     updatePreference,
-  } = useDifficultyPreference()
+  } = useDifficultyPreference({
+    onPreferenceChange: refreshMission,
+  })
 
   const [view, setView] = useState<View>("dashboard")
 
@@ -71,6 +75,7 @@ export default function Dashboard({
                 status,
                 loading,
                 reasons,
+                message,
                 start,
                 complete,
                 skip,

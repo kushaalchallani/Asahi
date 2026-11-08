@@ -3,15 +3,29 @@ import "./css/CheckInCard.css"
 import "./css/MissionCard.css"
 import CheckIn from "../../CheckIn/CheckIn"
 import Missions from "../../Missions/Missions"
+import type { MissionStatus } from "../../hooks/useMission"
+import type { Mission } from "../../services/api"
 import type { useCheckIns } from "../../../hooks/useCheckIns"
-import type { useMission } from "../../../hooks/useMission"
 import { LeafIcon } from "./DashboardIcons"
 
 type CheckInCreatedHandler = ReturnType<
   typeof useCheckIns
 >["handleCheckInCreated"]
 
-type MissionHookData = ReturnType<typeof useMission>
+interface MissionHookData {
+  mission: Mission | null
+  status: MissionStatus
+  loading: boolean
+  reasons: string[]
+  message?: string
+  start: () => Promise<void>
+  complete: () => Promise<void>
+  skip: () => Promise<void>
+  submitFeedback: (feedback: "helpful" | "not_for_me" | "not_sure") => Promise<void>
+  feedbackLoading: boolean
+  feedbackSubmitted: boolean
+  refresh: () => Promise<void>
+}
 
 interface DashboardContentProps {
   onCheckInCreated: CheckInCreatedHandler
@@ -27,6 +41,7 @@ export default function DashboardContent({
     status,
     loading,
     reasons,
+    message,
     start,
     complete,
     skip,
@@ -64,6 +79,7 @@ export default function DashboardContent({
               feedbackLoading={feedbackLoading}
               feedbackSubmitted={feedbackSubmitted}
               reasons={reasons}
+              message={message}
             />
           </div>
         </div>
