@@ -33,6 +33,7 @@ export interface AuthUser {
   id: number
   email: string
   is_active: boolean
+  name?: string | null
 }
 
 export interface AuthToken {
@@ -49,12 +50,18 @@ export interface DifficultyPreferenceResponse {
 
 export async function register(
   email: string,
-  password: string
+  password: string,
+  name?: string
 ): Promise<AuthUser> {
+  const body: { email: string; password: string; name?: string } = { email, password }
+  if (name) {
+    body.name = name
+  }
+
   const response = await apiRequest("/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {

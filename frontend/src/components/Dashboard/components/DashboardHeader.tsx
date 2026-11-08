@@ -11,9 +11,9 @@ export default function DashboardHeader({
   const hour = new Date().getHours()
 
   const greeting =
-    hour < 12
+    hour >= 5 && hour < 12
       ? "Good morning"
-      : hour < 18
+      : hour >= 12 && hour < 18
         ? "Good afternoon"
         : "Good evening"
 

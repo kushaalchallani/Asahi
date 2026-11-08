@@ -85,6 +85,7 @@ function Auth({ onAuthenticated, initialMode = "login", onBack }: AuthProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [name, setName] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState("")
@@ -105,7 +106,7 @@ function Auth({ onAuthenticated, initialMode = "login", onBack }: AuthProps) {
 
     try {
       if (mode === "register") {
-        await register(normalizedEmail, password)
+        await register(normalizedEmail, password, name)
       }
 
       const result = await login(normalizedEmail, password)
@@ -123,6 +124,7 @@ function Auth({ onAuthenticated, initialMode = "login", onBack }: AuthProps) {
   function switchMode() {
     setMode((current) => (current === "login" ? "register" : "login"))
     setError("")
+    setName("")
     setPassword("")
     setConfirmPassword("")
     setShowPassword(false)
@@ -169,6 +171,22 @@ function Auth({ onAuthenticated, initialMode = "login", onBack }: AuthProps) {
         </p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
+          {!isLogin && (
+            <div className="auth-field">
+              <label htmlFor="auth-name">Full Name</label>
+              <input
+                id="auth-name"
+                type="text"
+                autoComplete="name"
+                placeholder="What should we call you?"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={100}
+                required
+              />
+            </div>
+          )}
+
           <div className="auth-field">
             <label htmlFor="auth-email">Email address</label>
             <input

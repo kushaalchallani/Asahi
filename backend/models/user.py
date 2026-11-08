@@ -23,6 +23,9 @@ class User(Base):
     difficulty_preference: Mapped[str] = mapped_column(
         String(20), default="moderate", nullable=False
     )
+    name: Mapped[str | None] = mapped_column(
+        String(100), nullable=True, default=None
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
