@@ -10,6 +10,18 @@ function App() {
   const [publicView, setPublicView] = useState<"landing" | "login" | "register">("landing")
 
   useEffect(() => {
+    if (!user) {
+      if (publicView === "landing") {
+        document.title = "Asahi — Mental Wellness & Real Connections"
+      } else if (publicView === "login") {
+        document.title = "Asahi | Log In"
+      } else if (publicView === "register") {
+        document.title = "Asahi | Get Started"
+      }
+    }
+  }, [user, publicView])
+
+  useEffect(() => {
     let cancelled = false
 
     async function restoreSession() {
@@ -69,7 +81,13 @@ function App() {
     )
   }
 
-  return <Dashboard onLogout={handleLogout} />
+  return (
+      <Dashboard
+        onLogout={handleLogout}
+        name={user.name}
+        email={user.email}
+      />
+    )
 }
 
 export default App
