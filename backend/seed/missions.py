@@ -50,24 +50,45 @@ missions = [
         social_required=True,
         energy_required="medium",
     ),
+    Mission(
+        title="Plan and work towards a personal goal",
+        description="Choose something meaningful you would like to accomplish. Break it into smaller steps and spend some focused time working on the first one.",
+        category="reflection",
+        difficulty="high",
+        social_required=False,
+        energy_required="high",
+    ),
+    Mission(
+        title="Take on a focused learning challenge",
+        description="Choose something you have been curious about learning. Set aside some focused time to explore it and put what you learn into practice.",
+        category="reflection",
+        difficulty="high",
+        social_required=False,
+        energy_required="medium",
+    ),
 ]
 
 def seed_missions():
-    db=SessionLocal()
+    db = SessionLocal()
+    added_count = 0
 
     try:
-        existing_count = db.query(Mission).count()
+        for mission in missions:
+            existing = (
+                db.query(Mission)
+                .filter(Mission.title == mission.title)
+                .first()
+            )
 
-        if existing_count > 0:
-            print("Mission already exist. Nothing to seed.")
-            return
+            if not existing:
+                db.add(mission)
+                added_count += 1
 
-        db.add_all(missions)
         db.commit()
 
-        print(f"Seeded {len(missions)} mission(s).")
+        print(f"Added {added_count} new mission(s).")
+
     finally:
         db.close()
-
 if __name__ == "__main__":
     seed_missions()

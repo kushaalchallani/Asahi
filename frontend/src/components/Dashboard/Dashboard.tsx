@@ -5,10 +5,12 @@ import Insights from "../Insights/Insights"
 import { useCheckIns } from "../../hooks/useCheckIns"
 import { useInsights } from "../../hooks/useInsights"
 import { useMission } from "../../hooks/useMission"
+import { useDifficultyPreference } from "../../hooks/useDifficultyPreference"
 import DashboardSidebar from "./components/DashboardSidebar"
 import DashboardHeader from "./components/DashboardHeader"
 import WellbeingBanner from "./components/WellbeingBanner"
 import DashboardContent from "./components/DashboardContent"
+import DifficultyPreference from "./components/DifficultyPreference"
 
 interface DashboardProps {
   onLogout: () => void
@@ -37,6 +39,13 @@ export default function Dashboard({
     feedbackLoading,
     feedbackSubmitted,
   } = useMission()
+  const {
+    preference,
+    loading: preferenceLoading,
+    saving: preferenceSaving,
+    error: preferenceError,
+    updatePreference,
+  } = useDifficultyPreference()
 
   const [view, setView] = useState<View>("dashboard")
 
@@ -69,6 +78,13 @@ export default function Dashboard({
                 feedbackLoading,
                 feedbackSubmitted,
               }}
+            />
+            <DifficultyPreference
+                preference={preference}
+                loading={preferenceLoading}
+                saving={preferenceSaving}
+                error={preferenceError}
+                onChange={updatePreference}
             />
             <WellbeingBanner />
           </>

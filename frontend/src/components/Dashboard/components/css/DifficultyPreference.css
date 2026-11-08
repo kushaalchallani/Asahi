@@ -1,0 +1,72 @@
+.difficulty-panel {
+  margin-top: 28px;
+  padding: 26px;
+  background: #fffdf8;
+  border: 1px solid #e8e3d8;
+  border-radius: 18px;
+}
+
+.difficulty-heading h2 {
+  margin: 0;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.difficulty-heading p {
+  margin: 7px 0 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.difficulty-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 90px;
+  padding: 16px;
+  text-align: left;
+  color: var(--ink);
+  background: #faf8f2;
+  border: 1px solid #deded3;
+  border-radius: 12px;
+}
+
+.difficulty-option strong {
+  font-size: 15px;
+}
+
+.difficulty-option span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.difficulty-option.selected {
+  background: #f5eee2;
+  border: 2px solid var(--orange);
+}
+
+.difficulty-option:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.difficulty-error {
+  margin-top: 12px;
+  color: #b23b32;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .difficulty-options {
+    grid-template-columns: 1fr;
+  }
+}

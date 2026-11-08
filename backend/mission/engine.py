@@ -209,7 +209,15 @@ def score_mission(mission, is_low_mood, is_stressed, is_lonely, repeated_low_moo
 
         return score
 
-def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission,):
+def explain_mission_score(
+    mission,
+    is_low_mood,
+    is_stressed,
+    is_lonely,
+    repeated_low_mood,
+    feedback_by_mission,
+    difficulty_preference="moderate",
+):
     reasons = []
 
     if mission.energy_required == "low":
@@ -230,15 +238,20 @@ def explain_mission_score(mission, is_low_mood, is_stressed, is_lonely, repeated
     if repeated_low_mood and mission.energy_required == "low":
         reasons.append("low_energy_for_repeated_low_mood")
 
+    if score_difficulty_preference(
+        mission,
+        difficulty_preference,
+    ) > 0:
+        reasons.append("difficulty_match")
+
     feedback_history = feedback_by_mission.get(mission.id, [])
 
     if feedback_history:
-        latest_feedback = feedback_history[0]
-
-        if latest_feedback == "helpful":
+        feedback_score = score_feedback(feedback_history)
+        if feedback_score > 0:
             reasons.append("previously_helpful")
-        elif latest_feedback == "not_for_me":
-            reasons.append("previously_not_for_me")
+        elif feedback_score < 0:
+            reasons.append("mixed_or_negative_feedback")
 
     return reasons
 
@@ -261,6 +274,12 @@ def format_mission_reasons(reasons):
         "previously_helpful": (
             "You've found this activity helpful before."
         ),
+        "difficulty_match": (
+            "This activity matches your preferred difficulty level."
+        ),
+        "mixed_or_negative_feedback": (
+            "Your previous feedback suggests this activity may not be the best fit."
+        ),
     }
 
     return [
@@ -270,7 +289,7 @@ def format_mission_reasons(reasons):
     ]
 
 
-def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission,):
+def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, repeated_low_mood, feedback_by_mission, difficulty_preference="moderate"):
     reasons = explain_mission_score(
         mission,
         is_low_mood,
@@ -278,6 +297,7 @@ def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, re
         is_lonely,
         repeated_low_mood,
         feedback_by_mission,
+        difficulty_preference=difficulty_preference,
     )
 
     score = score_mission(
@@ -287,6 +307,7 @@ def build_recommendation_result(mission, is_low_mood, is_stressed, is_lonely, re
         is_lonely,
         repeated_low_mood,
         feedback_by_mission,
+        difficulty_preference=difficulty_preference,
     )
 
     return {
@@ -387,6 +408,13 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
 
     
     def ranking_score(mission):
+        difficulty_match = (
+            score_difficulty_preference(
+                mission,
+                difficulty_preference,
+            )
+        )
+
         rule_score = score_mission(
             mission,
             is_low_mood,
@@ -394,11 +422,11 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
             is_lonely,
             repeated_low_mood,
             feedback_by_mission,
-            difficulty_preference=difficulty_preference
+            difficulty_preference=difficulty_preference,
         )
 
         if model is None:
-            return (rule_score, 0.0)
+            return (difficulty_match, rule_score, 0.0)
 
         try:
             ml_score = predict_mission_match(
@@ -410,7 +438,7 @@ def choose_mission(current_check_in, recent_missions, missions, recent_feedback=
         except (ValueError, KeyError, AttributeError, TypeError):
             ml_score = 0.0
 
-        return (rule_score, ml_score)
+        return (difficulty_match, rule_score, ml_score)
 
     candidates.sort(key=ranking_score, reverse=True)
 

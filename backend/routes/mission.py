@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from dependencies.database import get_db
 from sqlalchemy import desc
-from mission.engine import choose_mission, build_feedback_history, explain_mission_score, format_mission_reasons, detect_mood, detect_repeated_low_mood
+from mission.engine import choose_mission, build_feedback_history, explain_mission_score, format_mission_reasons, detect_mood, detect_repeated_low_mood, score_difficulty_preference
 from schemas.mission_feedback import MissionFeedbackRequest
 from dependencies.auth import get_current_user
 from models.user import User
@@ -11,7 +11,7 @@ import models
 
 router = APIRouter(prefix='/missions', tags=['Missions'])
 
-def get_mission_reasons(mission, current_check_in, recent_check_ins, recent_feedback):
+def get_mission_reasons(mission, current_check_in, recent_check_ins, recent_feedback, difficulty_preference="moderate"):
     mood = detect_mood(current_check_in)
     repeated_low_mood = detect_repeated_low_mood(recent_check_ins)
 
@@ -22,6 +22,7 @@ def get_mission_reasons(mission, current_check_in, recent_check_ins, recent_feed
         is_lonely=mood["is_lonely"],
         repeated_low_mood=repeated_low_mood,
         feedback_by_mission=recent_feedback,
+        difficulty_preference=difficulty_preference,
     )
 
     return format_mission_reasons(reason_codes)
@@ -85,12 +86,88 @@ def get_today_mission(db: Session = Depends(get_db), current_user: User = Depend
             )
 
             recent_feedback = build_feedback_history(feedback_rows)
+            
+            if (
+                today_assignment.status == "assigned"
+                and mission
+                and current_check_in
+                and score_difficulty_preference(
+                    mission,
+                    current_user.difficulty_preference,
+                ) == 0
+            ):
+                recent_user_missions = (
+                    db.query(models.UserMission)
+                    .filter(models.UserMission.user_id == user_id)
+                    .order_by(desc(models.UserMission.id))
+                    .limit(5)
+                    .all()
+                )
+
+                recent_mission_ids = [
+                    item.mission_id for item in recent_user_missions
+                ]
+
+                recent_missions = (
+                    db.query(models.Mission)
+                    .filter(models.Mission.id.in_(recent_mission_ids))
+                    .all()
+                    if recent_mission_ids else []
+                )
+
+                all_missions = db.query(models.Mission).all()
+
+                new_mission = choose_mission(
+                    current_check_in,
+                    recent_missions,
+                    all_missions,
+                    recent_feedback=recent_feedback,
+                    recent_check_ins=recent_check_ins,
+                    difficulty_preference=current_user.difficulty_preference,
+                )
+
+                if (
+                    new_mission
+                    and new_mission.id != mission.id
+                    and score_difficulty_preference(
+                        new_mission,
+                        current_user.difficulty_preference,
+                    ) > 0
+                ):
+                    today_assignment.status = "superseded"
+
+                    new_assignment = models.UserMission(
+                        user_id=user_id,
+                        mission_id=new_mission.id,
+                        status="assigned",
+                    )
+
+                    db.add(new_assignment)
+                    db.commit()
+                    db.refresh(new_assignment)
+
+                    reasons = get_mission_reasons(
+                        new_mission,
+                        current_check_in,
+                        recent_check_ins,
+                        recent_feedback,
+                        current_user.difficulty_preference,
+                    )
+
+                    return {
+                        "mission": new_mission,
+                        "status": new_assignment.status,
+                        "assignment_id": new_assignment.id,
+                        "feedback": None,
+                        "reasons": reasons,
+                    }
 
             reasons = get_mission_reasons(
                 mission,
                 current_check_in,
                 recent_check_ins,
                 recent_feedback,
+                current_user.difficulty_preference,
             )
 
         return {
@@ -192,6 +269,7 @@ def get_today_mission(db: Session = Depends(get_db), current_user: User = Depend
         is_lonely=mood["is_lonely"],
         repeated_low_mood=repeated_low_mood,
         feedback_by_mission=recent_feedback,
+        difficulty_preference=current_user.difficulty_preference
     )
 
     reasons = format_mission_reasons(reason_codes)

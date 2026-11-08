@@ -41,6 +41,12 @@ export interface AuthToken {
   user: AuthUser
 }
 
+export type DifficultyPreference = "easy" | "moderate" | "challenging";
+export interface DifficultyPreferenceResponse {
+  difficulty_preference: DifficultyPreference;
+}
+
+
 export async function register(
   email: string,
   password: string
@@ -217,4 +223,32 @@ export async function submitMissionFeedback(
   }
 
   return response.json()
+}
+
+export async function getDifficultyPreference(): Promise<DifficultyPreferenceResponse> {
+  const response = await apiRequest("/preferences/difficulty");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch difficulty preference");
+  }
+
+  return response.json();
+}
+
+export async function updateDifficultyPreference(
+  difficulty_preference: DifficultyPreference
+): Promise<DifficultyPreferenceResponse> {
+  const response = await apiRequest("/preferences/difficulty", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ difficulty_preference }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update difficulty preference");
+  }
+
+  return response.json();
 }
