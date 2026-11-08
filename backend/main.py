@@ -11,9 +11,8 @@ from routes.preferences import router as preferences_router
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI()
-
-# Configure CORS - use environment variable for production flexibility
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[frontend_url],

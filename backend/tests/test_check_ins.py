@@ -124,3 +124,31 @@ def test_create_check_in_assigns_current_user(checkin_client):
 
     assert response.status_code == 200
     assert response.json()["user_id"] == checkin_client.user_a_id
+
+
+def test_create_check_in_without_note(checkin_client):
+    """Check-in can be created without optional note."""
+    checkin_client.headers.update({
+        "Authorization": (
+            f"Bearer {create_access_token(checkin_client.user_a_id)}"
+        )
+    })
+
+    response = checkin_client.post(
+        "/check-ins",
+        json={"feeling": "Okay"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["user_id"] == checkin_client.user_a_id
+    assert data["feeling"] == "Okay"
+
+
+def test_check_in_creation_requires_authentication(checkin_client):
+    """Creating a check-in requires authentication."""
+    response = checkin_client.post(
+        "/check-ins",
+        json={"feeling": "Okay"},
+    )
+    assert response.status_code == 401
