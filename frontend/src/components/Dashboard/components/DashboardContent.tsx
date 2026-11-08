@@ -3,8 +3,8 @@ import "./css/CheckInCard.css"
 import "./css/MissionCard.css"
 import CheckIn from "../../CheckIn/CheckIn"
 import Missions from "../../Missions/Missions"
-import type { MissionStatus } from "../../hooks/useMission"
-import type { Mission } from "../../services/api"
+import type { MissionStatus } from "../../../hooks/useMission"
+import type { Mission } from "../../../services/api"
 import type { useCheckIns } from "../../../hooks/useCheckIns"
 import { LeafIcon } from "./DashboardIcons"
 
@@ -29,7 +29,7 @@ interface MissionHookData {
 
 interface DashboardContentProps {
   onCheckInCreated: CheckInCreatedHandler
-  missionData: MissionHookData
+  missionData: Omit<MissionHookData, 'refresh'>
 }
 
 export default function DashboardContent({
