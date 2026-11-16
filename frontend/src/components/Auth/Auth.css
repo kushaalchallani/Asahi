@@ -67,8 +67,8 @@
   margin: 0 auto 16px;
   background-image: url("/images/asahi-logo.png");
   background-repeat: no-repeat;
-  background-size: 208.3% auto;
-  background-position: 50% 46.5%;
+  background-size: 70%;
+  background-position: center;
 }
 
 .auth-card h1 {

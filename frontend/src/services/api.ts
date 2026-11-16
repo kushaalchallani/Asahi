@@ -259,3 +259,93 @@ export async function updateDifficultyPreference(
 
   return response.json();
 }
+
+// settings
+export type Theme = "light" | "dark" | "system"
+export type TextSize = "normal" | "large" | "xlarge"
+
+export interface UserPreferences {
+  theme: Theme
+  reminders_enabled: boolean
+  reminder_time: string
+  email_digest: boolean
+  text_size: TextSize
+  reduced_motion: boolean
+  high_contrast: boolean
+}
+
+export interface UpdateUserPreferences {
+  theme?: Theme
+  reminders_enabled?: boolean
+  reminder_time?: string
+  email_digest?: boolean
+  text_size?: TextSize
+  reduced_motion?: boolean
+  high_contrast?: boolean
+}
+
+export async function getUserPreferences(): Promise<UserPreferences> {
+  const response = await apiRequest("/preferences/settings");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user preferences");
+  }
+
+  return response.json();
+}
+
+export async function updateUserPreferences(
+  preferences: UpdateUserPreferences
+): Promise<UserPreferences> {
+  const response = await apiRequest("/preferences/settings", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(preferences),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update user preferences");
+  }
+
+  return response.json();
+}
+
+export async function updateEmail(newEmail: string): Promise<AuthUser> {
+  const response = await apiRequest("/preferences/email", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email: newEmail }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update email");
+  }
+
+  return response.json();
+}
+
+export interface UpdatePasswordRequest {
+  current_password: string
+  new_password: string
+}
+
+export async function updatePassword(data: UpdatePasswordRequest): Promise<AuthUser> {
+  const response = await apiRequest("/preferences/password", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || "Failed to update password");
+  }
+
+  return response.json();
+}

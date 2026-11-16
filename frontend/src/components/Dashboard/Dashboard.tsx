@@ -10,6 +10,7 @@ import DashboardHeader from "./components/DashboardHeader"
 import WellbeingBanner from "./components/WellbeingBanner"
 import DashboardContent from "./components/DashboardContent"
 import DifficultyPreference from "./components/DifficultyPreference"
+import Settings from "../Settings/Settings"
 
 interface DashboardProps {
   onLogout: () => void
@@ -17,7 +18,7 @@ interface DashboardProps {
   email?: string
 }
 
-type View = "dashboard" | "history" | "insights"
+type View = "dashboard" | "history" | "insights" | "settings"
 
 export default function Dashboard({
   onLogout,
@@ -61,6 +62,8 @@ export default function Dashboard({
       document.title = "Asahi | History"
     } else if (view === "insights") {
       document.title = "Asahi | Insights"
+    } else if (view === "settings") {
+      document.title = "Asahi | Settings"
     }
   }, [view])
 
@@ -115,6 +118,18 @@ export default function Dashboard({
         {view === "history" && (
           <div className="dashboard-secondary" id="history">
             <History checkIns={checkIns} />
+          </div>
+        )}
+
+        {view === "settings" && (
+          <div className="dashboard-secondary" id="settings">
+            <Settings
+              userEmail={displayEmail}
+              userName={displayName}
+              currentDifficulty={preference}
+              onDifficultyChange={updatePreference}
+              onLogout={() => setShowLogoutModal(true)}
+            />
           </div>
         )}
       </section>

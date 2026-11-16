@@ -29,8 +29,8 @@
   background-color: #f9f5ed;
   background-image: url("/images/asahi-logo.png");
   background-repeat: no-repeat;
-  background-size: 263% auto;
-  background-position: 50% 37%;
+  background-size: 70%;
+  background-position: center;
 }
 
 .sidebar-brand-name {
@@ -73,13 +73,28 @@
   color: #f2a36f;
 }
 
+.sidebar-profile-container {
+  margin-top: auto;
+  position: relative;
+  padding-top: 16px;
+  border-top: 1px solid #334140;
+}
+
 .sidebar-profile {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: auto;
-  padding: 16px 4px 0;
-  border-top: 1px solid #334140;
+  width: 100%;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.sidebar-profile:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .profile-avatar {
@@ -98,6 +113,7 @@
   display: grid;
   min-width: 0;
   gap: 3px;
+  text-align: left;
 }
 
 .profile-details strong {
@@ -117,19 +133,47 @@
   white-space: nowrap;
 }
 
-.sidebar-logout {
-  display: grid;
-  place-items: center;
-  margin-left: auto;
+.profile-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background: #2a383a;
+  border: 1px solid #334140;
+  border-radius: 12px;
   padding: 6px;
-  border: 0;
-  border-radius: 8px;
-  color: #dfe6e2;
-  background: transparent;
+  display: grid;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
-.sidebar-logout:hover {
-  background: rgba(255, 255, 255, 0.08);
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #cbd5d2;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.menu-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.menu-item.logout {
+  color: #f2a36f;
+}
+
+.menu-item.logout:hover {
+  background: rgba(242, 163, 111, 0.1);
 }
 
 /* ---------- Mobile ---------- */
@@ -176,7 +220,7 @@
     height: 17px;
   }
 
-  .sidebar-profile {
+  .sidebar-profile-container {
     display: none;
   }
 }

@@ -29,3 +29,26 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
+
+    # Settings
+    theme: Mapped[str] = mapped_column(
+        String(10), default="system", nullable=False
+    )
+    reminders_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    reminder_time: Mapped[str] = mapped_column(
+        String(5), default="20:00", nullable=False
+    )
+    email_digest: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+    text_size: Mapped[str] = mapped_column(
+        String(10), default="normal", nullable=False
+    )
+    reduced_motion: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    high_contrast: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )

@@ -73,6 +73,13 @@ export const LeafIcon = (props: IconProps) => (
   </Svg>
 )
 
+export const SettingsIcon = (props: IconProps) => (
+  <Svg {...props}>
+    <path d="M17.6 15c-.5-.6-1.2-.6-1.7 0L8.4 9.1a.7.7 0 00-.3.9l1.6 3.2a.7.7 0 00.7.7h5.1a.7.7 0 00.6-.9l-1.6-3.1Z" />
+    <path d="M1 3a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V3Zm2 4h2v14H3V7Z" />
+  </Svg>
+)
+
 export const SproutIcon = (props: IconProps) => (
   <Svg {...props}>
     <path d="M12 20v-8" />

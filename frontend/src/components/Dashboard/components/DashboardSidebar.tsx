@@ -1,12 +1,14 @@
+import { useState } from "react"
 import "./css/DashboardSidebar.css"
 import {
   BarsIcon,
   ClockIcon,
   HomeIcon,
   LogoutIcon,
+  SettingsIcon,
 } from "./DashboardIcons"
 
-type View = "dashboard" | "history" | "insights"
+type View = "dashboard" | "history" | "insights" | "settings"
 
 interface DashboardSidebarProps {
   view: View
@@ -23,6 +25,8 @@ export default function DashboardSidebar({
   userName,
   userEmail,
 }: DashboardSidebarProps) {
+  const [showMenu, setShowMenu] = useState(false)
+
   const navItems = [
     { id: "dashboard" as const, label: "Dashboard", icon: <HomeIcon /> },
     { id: "history" as const, label: "History", icon: <ClockIcon /> },
@@ -51,25 +55,48 @@ export default function DashboardSidebar({
         ))}
       </nav>
 
-      <div className="sidebar-profile">
-        <div className="profile-avatar" aria-hidden="true">
-          {userName.charAt(0).toUpperCase()}
-        </div>
-
-        <div className="profile-details">
-          <strong>{userName}</strong>
-          <span>{userEmail}</span>
-        </div>
-
+      {/* profile section */}
+      <div className="sidebar-profile-container">
         <button
-          className="sidebar-logout"
-          type="button"
-          onClick={onLogout}
-          aria-label="Log out"
-          title="Log out"
+          className="sidebar-profile"
+          onClick={() => setShowMenu(!showMenu)}
+          aria-expanded={showMenu}
+          aria-haspopup="true"
         >
-          <LogoutIcon size={18} />
+          <div className="profile-avatar" aria-hidden="true">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+
+          <div className="profile-details">
+            <strong>{userName}</strong>
+            <span>{userEmail}</span>
+          </div>
         </button>
+
+        {showMenu && (
+          <div className="profile-menu">
+            <button
+              className="menu-item"
+              onClick={() => {
+                onViewChange("settings")
+                setShowMenu(false)
+              }}
+            >
+              <SettingsIcon size={16} />
+              <span>Settings</span>
+            </button>
+            <button
+              className="menu-item logout"
+              onClick={() => {
+                onLogout()
+                setShowMenu(false)
+              }}
+            >
+              <LogoutIcon size={16} />
+              <span>Sign out</span>
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   )
