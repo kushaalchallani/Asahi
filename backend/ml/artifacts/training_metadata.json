@@ -1,0 +1,24 @@
+{
+  "trained_at": "2026-11-23T01:49:49.791312",
+  "data_source": "synthetic",
+  "training_examples": 216,
+  "positive_examples": 9,
+  "negative_examples": 207,
+  "metrics": {
+    "accuracy": 0.9259259259259259,
+    "balanced_accuracy": 0.9615384615384616,
+    "precision": 0.3333333333333333,
+    "recall": 1.0,
+    "f1_score": 0.5,
+    "roc_auc": 0.9423076923076923,
+    "ndcg_at_5": 0.5012658353418871,
+    "baseline_accuracy": 0.9629629629629629,
+    "baseline_balanced_accuracy": 0.5,
+    "test_class_0_count": 52,
+    "test_class_1_count": 2,
+    "true_negative": 48,
+    "false_positive": 4,
+    "false_negative": 0,
+    "true_positive": 2
+  }
+}
