@@ -336,7 +336,7 @@ def generate_synthetic_training_data(
     import random
     from itertools import product
 
-    categories = ['regulation', 'connection', 'reflection', 'self-care', 'environment']
+    categories = ['regulation', 'environment', 'reflection', 'self-care', 'connection']
     difficulties = ['low', 'medium', 'high']
     energy_levels = ['low', 'medium', 'high']
     social_options = [False, True]

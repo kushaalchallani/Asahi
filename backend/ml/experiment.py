@@ -40,7 +40,7 @@ def make_synthetic_records() -> list[dict]:
     """
     records = []
 
-    categories = ['regulation', 'connection', 'reflection']
+    categories = ['regulation', 'environment', 'reflection', 'self-care', 'connection']
     difficulties = ['low', 'medium']
     energy_levels = ['low', 'medium', 'high']
     social_options = [False, True]
