@@ -1,6 +1,8 @@
 import type { CheckIn } from "../types/checkIn"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const API_URL = (
+  import.meta.env.VITE_API_URL || "https://asahi-api-zy10.onrender.com"
+).replace(/\/$/, "");
 const TOKEN_KEY = "asahi_access_token"
 
 export function getAccessToken(): string | null {
