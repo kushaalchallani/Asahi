@@ -1,0 +1,27 @@
+# Asahi Backend Dependencies
+
+# FastAPI framework
+fastapi>=0.109.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+alembic>=1.12.0
+
+# Security
+argon2-cffi>=23.1.0
+email-validator>=2.0.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=7.4.0
+httpx>=0.27.0
+
+# ML
+scikit-learn>=1.3.0
+joblib>=1.3.0
+numpy>=1.24.0
+
+# CORS (already in fastapi, but listed for clarity)
