@@ -225,9 +225,6 @@ Asahi/
 ├── backend/
 │   └── ...
 │
-├── .github/
-│   └── workflows/
-│
 ├── .env.example
 ├── .gitignore
 ├── alembic.ini
